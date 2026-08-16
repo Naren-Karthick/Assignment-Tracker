@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import { useDatabase, User, SEED_ROSTERS } from '@/context/DatabaseContext';
 import { 
   Users, Key, ShieldAlert, FileText, CheckCircle2, UserPlus, 
-  Settings, RefreshCw, Trash2, Edit, Check, X, Search, Filter 
+  Settings, RefreshCw, Trash2, Edit, Check, X, Search, Filter, BookOpen, Calendar
 } from 'lucide-react';
 
 export const AdminDashboard: React.FC = () => {
@@ -14,7 +14,7 @@ export const AdminDashboard: React.FC = () => {
     addStudent, updateStudent, deleteUser, resetDatabase 
   } = useDatabase();
 
-  const [activeTab, setActiveTab] = useState<'overview' | 'users' | 'passwords' | 'logs'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'users' | 'passwords' | 'logs' | 'coursework'>('overview');
   const [userSearch, setUserSearch] = useState('');
   const [roleFilter, setRoleFilter] = useState<'all' | 'hod' | 'faculty' | 'student'>('all');
   const [yearFilter, setYearFilter] = useState<'all' | '2nd_year' | '3rd_year' | '4th_year'>('all');
@@ -205,6 +205,13 @@ export const AdminDashboard: React.FC = () => {
         >
           <Key className="h-4 w-4" />
           <span>Password Management</span>
+        </button>
+        <button
+          onClick={() => setActiveTab('coursework')}
+          className={`flex items-center gap-2 border-b-2 px-4 py-3 text-sm font-medium transition-all duration-200 whitespace-nowrap ${activeTab === 'coursework' ? 'border-indigo-500 text-indigo-400' : 'border-transparent text-slate-400 hover:text-slate-200'}`}
+        >
+          <BookOpen className="h-4 w-4" />
+          <span>Academic Coursework</span>
         </button>
         <button
           onClick={() => setActiveTab('logs')}
@@ -659,6 +666,67 @@ export const AdminDashboard: React.FC = () => {
                 ))}
               </tbody>
             </table>
+          </div>
+        </div>
+      )}
+
+      {activeTab === 'coursework' && (
+        <div className="space-y-6 animate-in fade-in-50 duration-200">
+          <div className="border-b border-slate-800 pb-3">
+            <h3 className="text-lg font-bold text-white flex items-center gap-2">
+              <BookOpen className="h-5 w-5 text-indigo-500" />
+              <span>Academic Coursework Monitoring</span>
+            </h3>
+            <p className="text-xs text-slate-500 mt-1">Universal read access to all Assignments, Tests, and Homework posted by faculty.</p>
+          </div>
+
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+            {assignments.length === 0 ? (
+              <p className="col-span-full text-slate-500 text-sm italic text-center py-8">No coursework has been created yet.</p>
+            ) : (
+              assignments.map(a => {
+                const subsForAssign = submissions.filter(s => s.assignmentId === a.id);
+                const total = subsForAssign.length;
+                const completed = subsForAssign.filter(s => s.status === 'Completed').length;
+                const late = subsForAssign.filter(s => s.status === 'Late').length;
+                const pct = total > 0 ? Math.round(((completed + late) / total) * 100) : 0;
+                const teacher = users.find(u => u.id === a.facultyId);
+
+                return (
+                  <div key={a.id} className="rounded-xl border border-slate-800 bg-slate-900/30 p-5 flex flex-col justify-between">
+                    <div>
+                      <div className="flex justify-between items-start mb-2">
+                        <span className={`inline-flex items-center rounded px-2 py-0.5 text-[10px] font-semibold border ${
+                          a.type === 'Assignment' ? 'bg-indigo-500/10 text-indigo-400 border-indigo-500/20' :
+                          a.type === 'Test' ? 'bg-pink-500/10 text-pink-400 border-pink-500/20' :
+                          'bg-amber-500/10 text-amber-400 border-amber-500/20'
+                        } uppercase tracking-wider`}>
+                          {a.type}
+                        </span>
+                        <span className="text-[10px] text-slate-500 font-mono">Due: {a.dueDate}</span>
+                      </div>
+                      <h4 className="font-bold text-white text-base">{a.title}</h4>
+                      <p className="text-xs text-slate-400 mt-1 line-clamp-3 leading-relaxed">{a.description}</p>
+                      <div className="mt-3 text-[10px] text-slate-500 flex flex-col gap-1">
+                        <p>Subject: <span className="text-slate-350">{a.subjectName} ({a.subjectCode})</span></p>
+                        <p>Class: <span className="text-indigo-400 uppercase">{a.year.replace('_', ' ')}</span></p>
+                        <p>Faculty: <span className="text-slate-350">{teacher?.name || a.facultyId}</span></p>
+                      </div>
+                    </div>
+
+                    <div className="mt-6 pt-4 border-t border-slate-800/60">
+                      <div className="flex justify-between text-xs text-slate-400 mb-2">
+                        <span>Submission Progress:</span>
+                        <span className="font-semibold text-slate-200">{completed + late} / {total} graded</span>
+                      </div>
+                      <div className="h-1.5 w-full bg-slate-950 rounded-full overflow-hidden">
+                        <div className="h-full bg-indigo-500 rounded-full" style={{ width: `${pct}%` }}></div>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })
+            )}
           </div>
         </div>
       )}

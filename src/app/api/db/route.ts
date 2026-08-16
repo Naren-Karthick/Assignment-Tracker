@@ -292,6 +292,19 @@ const getSeedData = () => {
 let inMemoryDB: any = null;
 
 async function getDB() {
+  const JSON_BIN_URL = process.env.JSON_BIN_URL;
+  if (JSON_BIN_URL) {
+    try {
+      const res = await fetch(JSON_BIN_URL, { next: { revalidate: 0 } });
+      const data = await res.json();
+      if (data && typeof data === 'object' && Object.keys(data).length > 0 && data.users) {
+        return data;
+      }
+    } catch (err) {
+      console.error("JSON Bin Read Error:", err);
+    }
+  }
+
   const KV_URL = process.env.KV_REST_API_URL || process.env.UPSTASH_REDIS_REST_URL;
   const KV_TOKEN = process.env.KV_REST_API_TOKEN || process.env.UPSTASH_REDIS_REST_TOKEN;
 
@@ -340,11 +353,28 @@ async function getDB() {
 }
 
 async function saveDB(data: any) {
-  const KV_URL = process.env.KV_REST_API_URL || process.env.UPSTASH_REDIS_REST_URL;
-  const KV_TOKEN = process.env.KV_REST_API_TOKEN || process.env.UPSTASH_REDIS_REST_TOKEN;
-
   // Always update in-memory cache
   inMemoryDB = data;
+
+  const JSON_BIN_URL = process.env.JSON_BIN_URL;
+  if (JSON_BIN_URL) {
+    try {
+      // npoint.io supports PUT to overwrite/update the bin
+      await fetch(JSON_BIN_URL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(data)
+      });
+      return;
+    } catch (err) {
+      console.error("JSON Bin Write Error:", err);
+    }
+  }
+
+  const KV_URL = process.env.KV_REST_API_URL || process.env.UPSTASH_REDIS_REST_URL;
+  const KV_TOKEN = process.env.KV_REST_API_TOKEN || process.env.UPSTASH_REDIS_REST_TOKEN;
 
   if (KV_URL && KV_TOKEN) {
     try {

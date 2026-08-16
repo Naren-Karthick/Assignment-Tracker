@@ -289,11 +289,14 @@ const getSeedData = () => {
 };
 
 async function getDB() {
-  if (process.env.KV_REST_API_URL && process.env.KV_REST_API_TOKEN) {
+  const KV_URL = process.env.KV_REST_API_URL || process.env.UPSTASH_REDIS_REST_URL;
+  const KV_TOKEN = process.env.KV_REST_API_TOKEN || process.env.UPSTASH_REDIS_REST_TOKEN;
+
+  if (KV_URL && KV_TOKEN) {
     try {
-      const res = await fetch(`${process.env.KV_REST_API_URL}/get/smit_db`, {
+      const res = await fetch(`${KV_URL}/get/smit_db`, {
         headers: {
-          Authorization: `Bearer ${process.env.KV_REST_API_TOKEN}`
+          Authorization: `Bearer ${KV_TOKEN}`
         },
         next: { revalidate: 0 }
       });
@@ -317,12 +320,15 @@ async function getDB() {
 }
 
 async function saveDB(data: any) {
-  if (process.env.KV_REST_API_URL && process.env.KV_REST_API_TOKEN) {
+  const KV_URL = process.env.KV_REST_API_URL || process.env.UPSTASH_REDIS_REST_URL;
+  const KV_TOKEN = process.env.KV_REST_API_TOKEN || process.env.UPSTASH_REDIS_REST_TOKEN;
+
+  if (KV_URL && KV_TOKEN) {
     try {
-      await fetch(process.env.KV_REST_API_URL, {
+      await fetch(KV_URL, {
         method: 'POST',
         headers: {
-          Authorization: `Bearer ${process.env.KV_REST_API_TOKEN}`,
+          Authorization: `Bearer ${KV_TOKEN}`,
           'Content-Type': 'application/json'
         },
         body: JSON.stringify(['SET', 'smit_db', JSON.stringify(data)])

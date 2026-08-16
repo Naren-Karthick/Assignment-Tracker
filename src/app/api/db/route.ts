@@ -288,6 +288,8 @@ const getSeedData = () => {
   };
 };
 
+let inMemoryDB: any = null;
+
 async function getDB() {
   const KV_URL = process.env.KV_REST_API_URL || process.env.UPSTASH_REDIS_REST_URL;
   const KV_TOKEN = process.env.KV_REST_API_TOKEN || process.env.UPSTASH_REDIS_REST_TOKEN;
@@ -305,23 +307,43 @@ async function getDB() {
         return JSON.parse(data.result);
       }
     } catch (err) {
-      console.error("KV Read Error, falling back to local file:", err);
+      console.error("KV Read Error:", err);
     }
   }
 
-  // Fallback to local file db.json
-  if (!fs.existsSync(DB_FILE)) {
-    const data = getSeedData();
-    fs.writeFileSync(DB_FILE, JSON.stringify(data, null, 2));
-    return data;
+  // Use in-memory DB cache if local file writing is unavailable
+  if (inMemoryDB) {
+    return inMemoryDB;
   }
-  const fileContent = fs.readFileSync(DB_FILE, 'utf-8');
-  return JSON.parse(fileContent);
+
+  // Fallback to local file db.json (with safe try-catch for Vercel)
+  try {
+    if (fs.existsSync(DB_FILE)) {
+      const fileContent = fs.readFileSync(DB_FILE, 'utf-8');
+      inMemoryDB = JSON.parse(fileContent);
+      return inMemoryDB;
+    }
+  } catch (e) {
+    console.warn("Read-only filesystem: Local file read failed:", e);
+  }
+
+  // Seed default data
+  const data = getSeedData();
+  try {
+    fs.writeFileSync(DB_FILE, JSON.stringify(data, null, 2));
+  } catch (e) {
+    console.warn("Read-only filesystem: Local file write failed (Expected on Vercel serverless). Using memory.");
+  }
+  inMemoryDB = data;
+  return inMemoryDB;
 }
 
 async function saveDB(data: any) {
   const KV_URL = process.env.KV_REST_API_URL || process.env.UPSTASH_REDIS_REST_URL;
   const KV_TOKEN = process.env.KV_REST_API_TOKEN || process.env.UPSTASH_REDIS_REST_TOKEN;
+
+  // Always update in-memory cache
+  inMemoryDB = data;
 
   if (KV_URL && KV_TOKEN) {
     try {
@@ -335,12 +357,16 @@ async function saveDB(data: any) {
       });
       return;
     } catch (err) {
-      console.error("KV Write Error, falling back to local file:", err);
+      console.error("KV Write Error:", err);
     }
   }
 
   // Fallback to local file db.json
-  fs.writeFileSync(DB_FILE, JSON.stringify(data, null, 2));
+  try {
+    fs.writeFileSync(DB_FILE, JSON.stringify(data, null, 2));
+  } catch (e) {
+    console.warn("Read-only filesystem: Local file write failed (Expected on Vercel serverless). Saved to memory.");
+  }
 }
 
 export async function GET() {

@@ -79,7 +79,7 @@ export const StudentDashboard: React.FC = () => {
             <p className="mt-2 text-sm text-slate-300">
               Welcome, <strong className="text-white">{currentUser?.name}</strong> (Register No: <code className="text-indigo-300 font-mono text-xs">{currentUser?.id}</code>)
             </p>
-            <div className="mt-4 flex items-center gap-2">
+            <div className="mt-4 flex flex-wrap gap-2">
               <button
                 onClick={() => setShowNotificationsModal(true)}
                 className="relative flex items-center justify-center gap-1.5 rounded-lg border border-slate-700 bg-slate-800/40 px-3 py-1.5 text-xs font-semibold text-slate-350 hover:bg-slate-750 hover:text-white transition-all duration-200"
@@ -91,6 +91,22 @@ export const StudentDashboard: React.FC = () => {
                     {notifications.filter(n => n.userId === currentUser?.id && !n.isRead).length}
                   </span>
                 )}
+              </button>
+              <button
+                onClick={() => {
+                  if (typeof window !== 'undefined' && 'Notification' in window) {
+                    Notification.requestPermission().then(permission => {
+                      if (permission === 'granted') {
+                        alert("System alerts enabled! You will now receive audio chimes and native system push notifications on this device.");
+                      }
+                    });
+                  } else {
+                    alert("This browser/device does not support native push notifications.");
+                  }
+                }}
+                className="flex items-center justify-center gap-1.5 rounded-lg border border-slate-700 bg-slate-800/40 px-3 py-1.5 text-xs font-semibold text-slate-350 hover:bg-slate-750 hover:text-white transition-all duration-200"
+              >
+                <span>Enable Push Alerts</span>
               </button>
             </div>
           </div>

@@ -1,6 +1,7 @@
 "use client";
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { playNotificationChime, showSystemNotification } from '@/utils/audio';
 
 // Roster Data
 export const SEED_ROSTERS = {
@@ -368,6 +369,17 @@ export const DatabaseProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         });
 
         if (localStateStr !== serverStateStr) {
+          // Check for brand new unread notifications for currently logged in student
+          const localUnreadIds = new Set(notifications.filter(n => n.userId === currentUser?.id && !n.isRead).map(n => n.id));
+          const serverUnread = (db.notifications || []).filter((n: any) => n.userId === currentUser?.id && !n.isRead);
+          const brandNewUnread = serverUnread.filter((n: any) => !localUnreadIds.has(n.id));
+
+          if (brandNewUnread.length > 0 && currentUser?.role === 'student') {
+            playNotificationChime();
+            const latest = brandNewUnread[0];
+            showSystemNotification(latest.title, latest.message);
+          }
+
           setUsers(db.users || []);
           setSubjects(db.subjects || []);
           setAssignments(db.assignments || []);

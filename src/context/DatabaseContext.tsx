@@ -335,7 +335,53 @@ export const DatabaseProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       };
       saveDatabase();
     }
-  }, [users, subjects, assignments, submissions, auditLogs, isInitialized]);
+  }, [users, subjects, assignments, submissions, auditLogs, notifications, isInitialized]);
+
+  // Poll database from Server API every 5 seconds to sync multiple devices in real-time
+  useEffect(() => {
+    if (!isInitialized) return;
+
+    const interval = setInterval(async () => {
+      try {
+        if (document.hidden) return; // Skip if tab is inactive/hidden
+
+        const res = await fetch('/api/db');
+        const db = await res.json();
+
+        // Prevent redundant state updates & save loops by comparing payload strings
+        const localStateStr = JSON.stringify({
+          users,
+          subjects,
+          assignments,
+          submissions,
+          auditLogs,
+          notifications
+        });
+
+        const serverStateStr = JSON.stringify({
+          users: db.users || [],
+          subjects: db.subjects || [],
+          assignments: db.assignments || [],
+          submissions: db.submissions || [],
+          auditLogs: db.auditLogs || [],
+          notifications: db.notifications || []
+        });
+
+        if (localStateStr !== serverStateStr) {
+          setUsers(db.users || []);
+          setSubjects(db.subjects || []);
+          setAssignments(db.assignments || []);
+          setSubmissions(db.submissions || []);
+          setAuditLogs(db.auditLogs || []);
+          setNotifications(db.notifications || []);
+        }
+      } catch (err) {
+        console.error("Failed to sync database in background:", err);
+      }
+    }, 5000);
+
+    return () => clearInterval(interval);
+  }, [users, subjects, assignments, submissions, auditLogs, notifications, isInitialized]);
 
   const runSeeding = () => {
     const seedUsers: User[] = [];

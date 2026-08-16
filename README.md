@@ -17,18 +17,7 @@ This portal acts as a central workspace for tracking assignments, homework, and 
 *   **Responsive Cards Grid Layout**: Optimizes automatically for narrow mobile viewports, changing dense tables into actionable mobile cards.
 *   **HOD Subject Reallocation**: HODs can edit subject teacher allocations in-place with instantaneous database sync.
 
----
 
-## 🔑 Demo Access Credentials
-
-| Role | User ID / Email | Password |
-| :--- | :--- | :--- |
-| **Super Admin** | `narenkarthickgururaju@gmail.com` | `Narenguru` |
-| **HOD** (Dr. Kalaimagal Sivamuni) | `HOD` | `8886918686` |
-| **Faculty** | `staff1` | `password123` |
-| **Student** (e.g. Naren Karthick G) | `212625205029` | *Same as Register No* (`212625205029`) |
-
----
 
 ## 🛠️ Tech Stack
 

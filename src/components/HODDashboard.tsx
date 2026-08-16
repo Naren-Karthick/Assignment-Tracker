@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import { useDatabase, Subject, User, Assignment } from '@/context/DatabaseContext';
+import { FacultyDashboard } from './FacultyDashboard';
 import { 
   Users, BookOpen, GraduationCap, FileText, Download, 
   Plus, Trash2, ShieldAlert, Award, ChevronRight, X, Search 
@@ -14,7 +15,7 @@ export const HODDashboard: React.FC = () => {
     addSubject, deleteSubject 
   } = useDatabase();
 
-  const [activeTab, setActiveTab] = useState<'analytics' | 'staff' | 'subjects'>('analytics');
+  const [activeTab, setActiveTab] = useState<'analytics' | 'staff' | 'subjects' | 'teaching'>('analytics');
   const [selectedAssignmentDetails, setSelectedAssignmentDetails] = useState<Assignment | null>(null);
 
   // Form States for Staff
@@ -31,8 +32,8 @@ export const HODDashboard: React.FC = () => {
   const [subYear, setSubYear] = useState<'2nd_year' | '3rd_year' | '4th_year'>('2nd_year');
   const [subStaffId, setSubStaffId] = useState('');
 
-  // Fetch Faculty List
-  const facultyUsers = users.filter(u => u.role === 'faculty');
+  // Fetch Faculty List + include HOD since HOD will take class
+  const facultyUsers = users.filter(u => u.role === 'faculty' || u.role === 'hod');
 
   // Semester dropdown list
   const semesters = [
@@ -126,6 +127,13 @@ export const HODDashboard: React.FC = () => {
         >
           <FileText className="h-4 w-4" />
           <span>Assignment Analytics</span>
+        </button>
+        <button
+          onClick={() => setActiveTab('teaching')}
+          className={`flex items-center gap-2 border-b-2 px-4 py-3 text-sm font-medium transition-all duration-200 whitespace-nowrap ${activeTab === 'teaching' ? 'border-indigo-500 text-indigo-400' : 'border-transparent text-slate-400 hover:text-slate-200'}`}
+        >
+          <GraduationCap className="h-4 w-4" />
+          <span>Teaching Workspace</span>
         </button>
         <button
           onClick={() => setActiveTab('staff')}
@@ -590,6 +598,12 @@ export const HODDashboard: React.FC = () => {
               </table>
             </div>
           </div>
+        </div>
+      )}
+
+      {activeTab === 'teaching' && (
+        <div className="rounded-xl border border-slate-800 bg-slate-900/10 p-6 animate-in fade-in-50 duration-200">
+          <FacultyDashboard isEmbedded={true} />
         </div>
       )}
     </div>

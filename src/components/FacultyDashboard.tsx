@@ -7,7 +7,7 @@ import {
   Trash2, X, AlertCircle, Save, CheckCircle 
 } from 'lucide-react';
 
-export const FacultyDashboard: React.FC = () => {
+export const FacultyDashboard: React.FC<{ isEmbedded?: boolean }> = ({ isEmbedded = false }) => {
   const { 
     currentUser, subjects, assignments, submissions, users,
     createAssignment, deleteAssignment, evaluateSubmission 
@@ -85,29 +85,48 @@ export const FacultyDashboard: React.FC = () => {
   };
 
   return (
-    <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+    <div className={isEmbedded ? "" : "mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8"}>
       {/* Header section */}
-      <div className="mb-8 flex flex-col justify-between gap-4 border-b border-slate-800 pb-5 sm:flex-row sm:items-center">
-        <div>
-          <h2 className="text-2xl font-bold tracking-tight text-white sm:text-3xl">Faculty Portal</h2>
-          <p className="mt-1 text-sm text-slate-400">Welcome, {currentUser?.name} • Design coursework, assign homework, and evaluate submissions.</p>
+      {!isEmbedded ? (
+        <div className="mb-8 flex flex-col justify-between gap-4 border-b border-slate-800 pb-5 sm:flex-row sm:items-center">
+          <div>
+            <h2 className="text-2xl font-bold tracking-tight text-white sm:text-3xl">Faculty Portal</h2>
+            <p className="mt-1 text-sm text-slate-400">Welcome, {currentUser?.name} • Design coursework, assign homework, and evaluate submissions.</p>
+          </div>
+          <div className="flex gap-2">
+            <button 
+              onClick={() => {
+                if (mySubjects.length === 0) {
+                  alert("You do not have any allocated subjects. Please contact the HOD to allocate subjects.");
+                  return;
+                }
+                setShowAddAssignmentModal(true);
+              }}
+              className="flex items-center gap-1.5 rounded-lg bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white shadow-md hover:bg-indigo-500 transition-all duration-200"
+            >
+              <Plus className="h-4 w-4" />
+              <span>Create Assignment</span>
+            </button>
+          </div>
         </div>
-        <div className="flex gap-2">
+      ) : (
+        <div className="mb-4 flex justify-between items-center border-b border-slate-800 pb-3">
+          <p className="text-sm font-medium text-slate-400">Manage assignments and grade submissions for subjects you teach.</p>
           <button 
             onClick={() => {
               if (mySubjects.length === 0) {
-                alert("You do not have any allocated subjects. Please contact the HOD to allocate subjects.");
+                alert("You do not have any allocated subjects. Please allocate subjects to yourself under 'Subjects & Allocations' first.");
                 return;
               }
               setShowAddAssignmentModal(true);
             }}
-            className="flex items-center gap-1.5 rounded-lg bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white shadow-md hover:bg-indigo-500 transition-all duration-200"
+            className="flex items-center gap-1.5 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow-md hover:bg-indigo-500 transition-all duration-200"
           >
-            <Plus className="h-4 w-4" />
-            <span>Create Assignment</span>
+            <Plus className="h-3.5 w-3.5" />
+            <span>Create Coursework</span>
           </button>
         </div>
-      </div>
+      )}
 
       {/* Tabs */}
       <div className="flex gap-2 border-b border-slate-800 mb-8 overflow-x-auto pb-px">

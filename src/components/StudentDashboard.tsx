@@ -29,10 +29,45 @@ export const StudentDashboard: React.FC = () => {
     return matchesSubject && matchesStatus && matchesType;
   });
 
-
+  const myNotifications = notifications.filter(n => n.userId === currentUser?.id);
+  const unreadNotifications = myNotifications.filter(n => !n.isRead);
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+      {/* Alert banner for unread notifications */}
+      {unreadNotifications.length > 0 && (
+        <div className="mb-6 rounded-2xl border border-indigo-500/20 bg-indigo-950/15 p-5 backdrop-blur-md animate-in fade-in slide-in-from-top-4 duration-300">
+          <div className="flex items-center justify-between mb-3 pb-2.5 border-b border-indigo-500/10">
+            <div className="flex items-center gap-2">
+              <span className="relative flex h-2 w-2">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-indigo-400 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-indigo-500"></span>
+              </span>
+              <h3 className="font-bold text-white text-sm">New Coursework Posted ({unreadNotifications.length})</h3>
+            </div>
+            <button
+              onClick={() => markNotificationsAsRead(currentUser?.id || '')}
+              className="text-xs font-semibold text-indigo-400 hover:text-indigo-300 transition-colors"
+            >
+              Mark all as read
+            </button>
+          </div>
+          <div className="space-y-2 max-h-40 overflow-y-auto pr-2">
+            {unreadNotifications.map(n => (
+              <div key={n.id} className="text-xs bg-slate-950/40 p-3 rounded-lg border border-slate-800/40 flex justify-between items-center">
+                <div>
+                  <p className="font-bold text-slate-200">{n.title}</p>
+                  <p className="text-slate-400 mt-0.5">{n.message}</p>
+                </div>
+                <span className="text-[10px] text-slate-500 whitespace-nowrap ml-4">
+                  {new Date(n.createdAt).toLocaleDateString()}
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* Upper info card */}
       <div className="mb-8 rounded-2xl border border-indigo-500/20 bg-gradient-to-r from-slate-900 via-indigo-950/10 to-slate-900 p-6 sm:p-8">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">

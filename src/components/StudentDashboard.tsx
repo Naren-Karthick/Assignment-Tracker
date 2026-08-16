@@ -8,9 +8,10 @@ import {
 } from 'lucide-react';
 
 export const StudentDashboard: React.FC = () => {
-  const { currentUser, assignments, submissions, evaluateSubmission, subjects } = useDatabase();
+  const { currentUser, assignments, submissions, subjects } = useDatabase();
   const [filterSubject, setFilterSubject] = useState('all');
   const [filterStatus, setFilterStatus] = useState<'all' | 'Pending' | 'Completed' | 'Late' | 'Missing'>('all');
+  const [filterType, setFilterType] = useState<'all' | 'Assignment' | 'Test' | 'Homework'>('all');
 
   // Filter assignments based on student's year
   const studentYear = currentUser?.targetYear;
@@ -23,28 +24,11 @@ export const StudentDashboard: React.FC = () => {
     const sub = submissions.find(s => s.assignmentId === a.id && s.studentRegisterNo === currentUser?.id);
     const matchesSubject = filterSubject === 'all' || a.subjectCode === filterSubject;
     const matchesStatus = filterStatus === 'all' || (sub ? sub.status === filterStatus : filterStatus === 'Pending');
-    return matchesSubject && matchesStatus;
+    const matchesType = filterType === 'all' || a.type === filterType;
+    return matchesSubject && matchesStatus && matchesType;
   });
 
-  const handleSimulateSubmit = (assignmentId: string) => {
-    const target = assignments.find(a => a.id === assignmentId);
-    if (!target || !currentUser) return;
 
-    // Check if past due date
-    const today = new Date();
-    const due = new Date(target.dueDate);
-    const status = today > due ? 'Late' : 'Completed';
-
-    evaluateSubmission(
-      assignmentId,
-      currentUser.id,
-      status,
-      undefined, // Score remains undefined until graded by faculty
-      "Submitted by student (Demo simulation)"
-    );
-
-    alert(`Successfully submitted assignment! Status is marked as: ${status}. Faculty can now grade your work.`);
-  };
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
@@ -104,6 +88,17 @@ export const StudentDashboard: React.FC = () => {
           <option value="Late">Late Submission</option>
           <option value="Missing">Missing</option>
         </select>
+
+        <select
+          value={filterType}
+          onChange={(e) => setFilterType(e.target.value as any)}
+          className="rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-xs text-slate-350 focus:border-indigo-500 focus:outline-none"
+        >
+          <option value="all">All Types</option>
+          <option value="Assignment">Assignment Only</option>
+          <option value="Test">Test Only</option>
+          <option value="Homework">Homework Only</option>
+        </select>
       </div>
 
       {/* Assignments list */}
@@ -130,6 +125,13 @@ export const StudentDashboard: React.FC = () => {
                   {/* Info */}
                   <div className="space-y-1.5 flex-1">
                     <div className="flex items-center gap-2">
+                      <span className={`inline-flex items-center rounded px-2 py-0.5 text-[10px] font-semibold border ${
+                        a.type === 'Assignment' ? 'bg-indigo-500/10 text-indigo-400 border-indigo-500/20' :
+                        a.type === 'Test' ? 'bg-pink-500/10 text-pink-400 border-pink-500/20' :
+                        'bg-amber-500/10 text-amber-400 border-amber-500/20'
+                      } uppercase tracking-wider`}>
+                        {a.type}
+                      </span>
                       <span className="inline-flex items-center rounded bg-slate-850 px-2 py-0.5 text-[10px] font-semibold text-slate-350 border border-slate-800 uppercase tracking-wider">
                         {a.subjectCode} • {a.subjectName}
                       </span>
@@ -168,16 +170,6 @@ export const StudentDashboard: React.FC = () => {
                     }`}>
                       {sub?.status || 'Pending'}
                     </span>
-
-                    {isPending && (
-                      <button
-                        onClick={() => handleSimulateSubmit(a.id)}
-                        className="mt-2 flex items-center justify-center gap-1.5 rounded-lg bg-indigo-600 px-4 py-2 text-xs font-semibold text-white hover:bg-indigo-500 transition-colors"
-                      >
-                        <Send className="h-3 w-3" />
-                        <span>Submit Work</span>
-                      </button>
-                    )}
                   </div>
                 </div>
               </div>

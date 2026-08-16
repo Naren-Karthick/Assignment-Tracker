@@ -174,6 +174,7 @@ export interface Assignment {
   year: '2nd_year' | '3rd_year' | '4th_year';
   facultyId: string;
   createdAt: string;
+  type: 'Assignment' | 'Test' | 'Homework';
 }
 
 export interface Submission {
@@ -215,7 +216,7 @@ interface DatabaseContextType {
   addSubject: (code: string, name: string, semester: string, year: '2nd_year' | '3rd_year' | '4th_year', allocatedStaffId: string) => void;
   deleteSubject: (code: string) => void;
   // Faculty Methods
-  createAssignment: (title: string, description: string, dueDate: string, subjectCode: string, year: '2nd_year' | '3rd_year' | '4th_year') => void;
+  createAssignment: (title: string, description: string, dueDate: string, subjectCode: string, year: '2nd_year' | '3rd_year' | '4th_year', type: 'Assignment' | 'Test' | 'Homework') => void;
   deleteAssignment: (assignmentId: string) => void;
   evaluateSubmission: (assignmentId: string, studentRegisterNo: string, status: 'Completed' | 'Pending' | 'Late' | 'Missing', score?: number, feedback?: string) => void;
 }
@@ -343,7 +344,8 @@ export const DatabaseProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         subjectName: 'Data Structures',
         year: '2nd_year',
         facultyId: 'rajesh@smit.edu.in',
-        createdAt: new Date().toISOString()
+        createdAt: new Date().toISOString(),
+        type: 'Assignment'
       },
       {
         id: 'a2',
@@ -354,7 +356,8 @@ export const DatabaseProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         subjectName: 'Web Technology',
         year: '3rd_year',
         facultyId: 'priya@smit.edu.in',
-        createdAt: new Date().toISOString()
+        createdAt: new Date().toISOString(),
+        type: 'Assignment'
       }
     ];
 
@@ -642,7 +645,7 @@ export const DatabaseProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   };
 
   // Faculty Methods
-  const createAssignment = (title: string, description: string, dueDate: string, subjectCode: string, year: '2nd_year' | '3rd_year' | '4th_year') => {
+  const createAssignment = (title: string, description: string, dueDate: string, subjectCode: string, year: '2nd_year' | '3rd_year' | '4th_year', type: 'Assignment' | 'Test' | 'Homework') => {
     const id = 'assign_' + Date.now();
     const sub = subjects.find(s => s.code === subjectCode);
     const newAssignment: Assignment = {
@@ -654,7 +657,8 @@ export const DatabaseProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       subjectName: sub ? sub.name : 'Unknown',
       year,
       facultyId: currentUser?.id || 'unknown',
-      createdAt: new Date().toISOString()
+      createdAt: new Date().toISOString(),
+      type
     };
 
     setAssignments(prev => [...prev, newAssignment]);
@@ -671,7 +675,7 @@ export const DatabaseProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     const newLog: AuditLog = {
       id: 'log_' + Date.now(),
       user: currentUser?.name || 'Faculty',
-      action: `Posted assignment "${title}" for ${year.replace('_', ' ')} (${sub?.name || subjectCode}).`,
+      action: `Posted ${type.toLowerCase()} "${title}" for ${year.replace('_', ' ')} (${sub?.name || subjectCode}).`,
       timestamp: new Date().toISOString()
     };
     setAuditLogs(prev => [newLog, ...prev]);

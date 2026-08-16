@@ -21,6 +21,7 @@ export const FacultyDashboard: React.FC = () => {
   const [assignDesc, setAssignDesc] = useState('');
   const [assignDueDate, setAssignDueDate] = useState('');
   const [assignSubCode, setAssignSubCode] = useState('');
+  const [assignType, setAssignType] = useState<'Assignment' | 'Test' | 'Homework'>('Assignment');
 
   // Evaluation states
   const [selectedAssignmentForEval, setSelectedAssignmentForEval] = useState<string>('');
@@ -48,7 +49,8 @@ export const FacultyDashboard: React.FC = () => {
       assignDesc,
       assignDueDate,
       assignSubCode,
-      selectedSubject.year
+      selectedSubject.year,
+      assignType
     );
 
     // Reset Form
@@ -56,6 +58,7 @@ export const FacultyDashboard: React.FC = () => {
     setAssignDesc('');
     setAssignDueDate('');
     setAssignSubCode('');
+    setAssignType('Assignment');
     setShowAddAssignmentModal(false);
   };
 
@@ -200,6 +203,19 @@ export const FacultyDashboard: React.FC = () => {
                 />
               </div>
 
+              <div>
+                <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">Task Type</label>
+                <select
+                  value={assignType}
+                  onChange={(e: any) => setAssignType(e.target.value)}
+                  className="w-full rounded-lg border border-slate-700 bg-slate-950 p-2.5 text-sm text-slate-300 focus:border-indigo-500 focus:outline-none"
+                >
+                  <option value="Assignment">Assignment</option>
+                  <option value="Test">Test</option>
+                  <option value="Homework">Homework</option>
+                </select>
+              </div>
+
               <div className="flex gap-3 justify-end pt-4 border-t border-slate-800">
                 <button
                   type="button"
@@ -243,7 +259,7 @@ export const FacultyDashboard: React.FC = () => {
                     <div>
                       <div className="flex justify-between items-start mb-2">
                         <span className="inline-flex items-center rounded bg-slate-850 px-2 py-0.5 text-[10px] font-semibold text-slate-350 border border-slate-800 uppercase tracking-wider">
-                          {a.subjectCode} • {a.year.replace('_', ' ')}
+                          {a.type} • {a.subjectCode} • {a.year.replace('_', ' ')}
                         </span>
                         <span className="text-[10px] text-slate-500 font-mono">Due: {a.dueDate}</span>
                       </div>

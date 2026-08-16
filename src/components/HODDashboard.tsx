@@ -44,7 +44,7 @@ export const HODDashboard: React.FC = () => {
   // CSV Export Utility
   const exportAnalyticsToCSV = () => {
     let csvContent = "data:text/csv;charset=utf-8,";
-    csvContent += "Assignment Title,Subject,Year,Due Date,Total Roster,Completed,Pending,Late,Missing,Completion Rate (%)\n";
+    csvContent += "Task Title,Type,Subject,Year,Due Date,Total Roster,Completed,Pending,Late,Missing,Completion Rate (%)\n";
 
     assignments.forEach(a => {
       const targetSubs = submissions.filter(s => s.assignmentId === a.id);
@@ -55,7 +55,7 @@ export const HODDashboard: React.FC = () => {
       const missing = targetSubs.filter(s => s.status === 'Missing').length;
       const rate = total > 0 ? Math.round(((completed + late) / total) * 100) : 0;
 
-      csvContent += `"${a.title}","${a.subjectName} (${a.subjectCode})","${a.year.replace('_', ' ')}","${a.dueDate}",${total},${completed},${pending},${late},${missing},${rate}%\n`;
+      csvContent += `"${a.title}","${a.type}","${a.subjectName} (${a.subjectCode})","${a.year.replace('_', ' ')}","${a.dueDate}",${total},${completed},${pending},${late},${missing},${rate}%\n`;
     });
 
     const encodedUri = encodeURI(csvContent);
@@ -176,7 +176,7 @@ export const HODDashboard: React.FC = () => {
                         <div className="flex justify-between items-start gap-4">
                           <div>
                             <span className="inline-flex items-center rounded bg-indigo-500/10 px-2 py-0.5 text-[10px] font-semibold text-indigo-400 border border-indigo-500/20 uppercase tracking-wider mb-2">
-                              {a.year.replace('_', ' ')} • {a.subjectCode}
+                              {a.type} • {a.year.replace('_', ' ')} • {a.subjectCode}
                             </span>
                             <h4 className="text-sm font-bold text-white group-hover:text-indigo-400 transition-colors">{a.title}</h4>
                             <p className="text-xs text-slate-400 mt-1 line-clamp-2">{a.description}</p>

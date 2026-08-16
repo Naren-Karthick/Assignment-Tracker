@@ -264,12 +264,13 @@ export const DatabaseProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         if (hodIdx === -1) {
           db.users.push({
             id: 'HOD',
-            name: 'Dr. Srinivasan M (HOD IT)',
+            name: 'Dr. Kalaimagal Sivamuni',
             role: 'hod',
             passwordHash: '8886918686',
             isActive: true
           });
         } else {
+          db.users[hodIdx].name = 'Dr. Kalaimagal Sivamuni';
           db.users[hodIdx].passwordHash = '8886918686';
           db.users[hodIdx].role = 'hod';
           db.users[hodIdx].isActive = true;
@@ -324,7 +325,7 @@ export const DatabaseProvider: React.FC<{ children: React.ReactNode }> = ({ chil
 
   const runSeeding = () => {
     const seedUsers: User[] = [];
-    
+
     // Super Admin (as requested: narenkarthickgururaju@gmail.com / Narenguru)
     seedUsers.push({
       id: 'narenkarthickgururaju@gmail.com',
@@ -337,7 +338,7 @@ export const DatabaseProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     // HOD (as requested: HOD / 8886918686)
     seedUsers.push({
       id: 'HOD',
-      name: 'Dr. Srinivasan M (HOD IT)',
+      name: 'Dr. Kalaimagal Sivamuni',
       role: 'hod',
       passwordHash: '8886918686',
       isActive: true
@@ -345,9 +346,8 @@ export const DatabaseProvider: React.FC<{ children: React.ReactNode }> = ({ chil
 
     // Faculty
     const mockStaff = [
-      { id: 'rajesh@smit.edu.in', name: 'Dr. Rajesh Kumar', password: 'password123' },
-      { id: 'priya@smit.edu.in', name: 'Mrs. Priya S', password: 'password123' },
-      { id: 'anbarasan@smit.edu.in', name: 'Mr. Anbarasan K', password: 'password123' }
+      { id: 'staff1', name: 'staff1', password: 'password123' },
+
     ];
 
     mockStaff.forEach(s => {
@@ -415,7 +415,7 @@ export const DatabaseProvider: React.FC<{ children: React.ReactNode }> = ({ chil
 
     // Seed Submissions for all students in the target class
     const seedSubmissions: Submission[] = [];
-    
+
     // We can pre-grade some, leave others pending, etc.
     SEED_ROSTERS['2nd_year'].students.forEach((student, index) => {
       let status: 'Completed' | 'Pending' | 'Late' | 'Missing' = 'Pending';
@@ -530,7 +530,7 @@ export const DatabaseProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   // Universal Password Reset
   const changePassword = (userId: string, newPassword: string) => {
     setUsers(prev => prev.map(u => u.id === userId ? { ...u, passwordHash: newPassword } : u));
-    
+
     // Log audit
     const adminName = currentUser ? currentUser.name : 'Super Admin';
     const updatedUser = users.find(u => u.id === userId);
@@ -802,7 +802,7 @@ export const DatabaseProvider: React.FC<{ children: React.ReactNode }> = ({ chil
 
     const student = users.find(u => u.id === studentRegisterNo);
     const assignment = assignments.find(a => a.id === assignmentId);
-    
+
     const newLog: AuditLog = {
       id: 'log_' + Date.now(),
       user: currentUser?.name || 'Faculty',

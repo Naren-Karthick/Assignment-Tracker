@@ -32,8 +32,11 @@ export const HODDashboard: React.FC<{ isEmbedded?: boolean }> = ({ isEmbedded = 
   const [subYear, setSubYear] = useState<'2nd_year' | '3rd_year' | '4th_year'>('2nd_year');
   const [subStaffId, setSubStaffId] = useState('');
 
-  // Fetch Faculty List + HOD + Admin (so Admin/HOD can also take classes)
-  const facultyUsers = users.filter(u => u.role === 'faculty' || u.role === 'hod' || u.role === 'admin');
+  // Faculty List - only show users with role 'faculty' in HOD's Teaching Staff roster view
+  const facultyUsers = users.filter(u => u.role === 'faculty');
+
+  // Allocable Staff List - HODs can assign classes to either HODs or Faculty (Admins excluded)
+  const allocableStaff = users.filter(u => u.role === 'faculty' || u.role === 'hod');
 
   // Semester dropdown list
   const semesters = [
@@ -531,7 +534,7 @@ export const HODDashboard: React.FC<{ isEmbedded?: boolean }> = ({ isEmbedded = 
                         className="w-full rounded-lg border border-slate-700 bg-slate-950 p-2.5 text-sm text-slate-300 focus:border-indigo-500 focus:outline-none"
                       >
                         <option value="">-- Select Staff --</option>
-                        {facultyUsers.map(f => (
+                        {allocableStaff.map(f => (
                           <option key={f.id} value={f.id}>{f.name}</option>
                         ))}
                       </select>

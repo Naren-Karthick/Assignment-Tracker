@@ -235,24 +235,18 @@ export const DatabaseProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   const [auditLogs, setAuditLogs] = useState<AuditLog[]>([]);
   const [isInitialized, setIsInitialized] = useState(false);
 
-  // Initialize DB from LocalStorage or Seed Data
+  // Initialize DB from Server API
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const storedUsers = localStorage.getItem('smit_users');
-      const storedSubjects = localStorage.getItem('smit_subjects');
-      const storedAssignments = localStorage.getItem('smit_assignments');
-      const storedSubmissions = localStorage.getItem('smit_submissions');
-      const storedLogs = localStorage.getItem('smit_auditLogs');
-      const storedSession = localStorage.getItem('smit_session');
+    const loadDatabase = async () => {
+      try {
+        const res = await fetch('/api/db');
+        const db = await res.json();
 
-      if (storedUsers && storedSubjects && storedAssignments && storedSubmissions) {
-        const parsedUsers = JSON.parse(storedUsers) as User[];
-        
-        // Self-heal: Ensure Admin exists and has correct password
+        // Ensure Admin exists (self-healing migration)
         const adminEmail = 'narenkarthickgururaju@gmail.com';
-        const adminIdx = parsedUsers.findIndex(u => u.id.toLowerCase() === adminEmail.toLowerCase());
+        const adminIdx = db.users.findIndex((u: any) => u.id.toLowerCase() === adminEmail.toLowerCase());
         if (adminIdx === -1) {
-          parsedUsers.push({
+          db.users.push({
             id: adminEmail,
             name: 'Naren Karthick G (Super Admin)',
             role: 'admin',
@@ -260,15 +254,15 @@ export const DatabaseProvider: React.FC<{ children: React.ReactNode }> = ({ chil
             isActive: true
           });
         } else {
-          parsedUsers[adminIdx].passwordHash = 'Narenguru';
-          parsedUsers[adminIdx].role = 'admin';
-          parsedUsers[adminIdx].isActive = true;
+          db.users[adminIdx].passwordHash = 'Narenguru';
+          db.users[adminIdx].role = 'admin';
+          db.users[adminIdx].isActive = true;
         }
 
-        // Self-heal: Ensure HOD exists and has correct password
-        const hodIdx = parsedUsers.findIndex(u => u.id === 'HOD');
+        // Ensure HOD exists
+        const hodIdx = db.users.findIndex((u: any) => u.id === 'HOD');
         if (hodIdx === -1) {
-          parsedUsers.push({
+          db.users.push({
             id: 'HOD',
             name: 'Dr. Srinivasan M (HOD IT)',
             role: 'hod',
@@ -276,35 +270,55 @@ export const DatabaseProvider: React.FC<{ children: React.ReactNode }> = ({ chil
             isActive: true
           });
         } else {
-          parsedUsers[hodIdx].passwordHash = '8886918686';
-          parsedUsers[hodIdx].role = 'hod';
-          parsedUsers[hodIdx].isActive = true;
+          db.users[hodIdx].passwordHash = '8886918686';
+          db.users[hodIdx].role = 'hod';
+          db.users[hodIdx].isActive = true;
         }
 
-        setUsers(parsedUsers);
-        setSubjects(JSON.parse(storedSubjects));
-        setAssignments(JSON.parse(storedAssignments));
-        setSubmissions(JSON.parse(storedSubmissions));
-        setAuditLogs(JSON.parse(storedLogs || '[]'));
+        setUsers(db.users);
+        setSubjects(db.subjects);
+        setAssignments(db.assignments);
+        setSubmissions(db.submissions);
+        setAuditLogs(db.auditLogs);
+
+        // Session remains local to the device browser
+        const storedSession = localStorage.getItem('smit_session');
         if (storedSession) {
           setCurrentUser(JSON.parse(storedSession));
         }
-      } else {
-        // Run seed
-        runSeeding();
+      } catch (err) {
+        console.error("Failed to load database from server:", err);
+      } finally {
+        setIsInitialized(true);
       }
-      setIsInitialized(true);
-    }
+    };
+
+    loadDatabase();
   }, []);
 
-  // Save changes to LocalStorage
+  // Save changes to Server API
   useEffect(() => {
     if (isInitialized && typeof window !== 'undefined') {
-      localStorage.setItem('smit_users', JSON.stringify(users));
-      localStorage.setItem('smit_subjects', JSON.stringify(subjects));
-      localStorage.setItem('smit_assignments', JSON.stringify(assignments));
-      localStorage.setItem('smit_submissions', JSON.stringify(submissions));
-      localStorage.setItem('smit_auditLogs', JSON.stringify(auditLogs));
+      const saveDatabase = async () => {
+        try {
+          await fetch('/api/db', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+              users,
+              subjects,
+              assignments,
+              submissions,
+              auditLogs
+            })
+          });
+        } catch (err) {
+          console.error("Failed to save database state to server:", err);
+        }
+      };
+      saveDatabase();
     }
   }, [users, subjects, assignments, submissions, auditLogs, isInitialized]);
 

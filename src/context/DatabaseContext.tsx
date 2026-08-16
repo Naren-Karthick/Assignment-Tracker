@@ -212,7 +212,9 @@ interface DatabaseContextType {
   addStudent: (registerNo: string, name: string, year: '2nd_year' | '3rd_year' | '4th_year') => void;
   updateStudent: (registerNo: string, name: string, year: '2nd_year' | '3rd_year' | '4th_year') => void;
   deleteUser: (userId: string) => void;
-  clearAssignmentsAndStaffs: () => void;
+  clearAssignments: () => void;
+  clearFaculty: () => void;
+  clearHODs: () => void;
   // HOD Methods
   addSubject: (code: string, name: string, semester: string, year: '2nd_year' | '3rd_year' | '4th_year', allocatedStaffId: string) => void;
   deleteSubject: (code: string) => void;
@@ -613,15 +615,40 @@ export const DatabaseProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     setAuditLogs(prev => [newLog, ...prev]);
   };
 
-  const clearAssignmentsAndStaffs = () => {
+  const clearAssignments = () => {
     setAssignments([]);
     setSubmissions([]);
-    setUsers(prev => prev.filter(u => u.role !== 'faculty' && u.role !== 'hod'));
 
     const newLog: AuditLog = {
       id: 'log_' + Date.now(),
       user: currentUser?.name || 'Admin',
-      action: 'Cleared all assignments, submissions, and teaching staff (HOD & Faculty) accounts.',
+      action: 'Cleared all assignments and submissions.',
+      timestamp: new Date().toISOString()
+    };
+    setAuditLogs(prev => [newLog, ...prev]);
+  };
+
+  const clearFaculty = () => {
+    setUsers(prev => prev.filter(u => u.role !== 'faculty'));
+    // Also deallocate any subjects assigned to faculty
+    setSubjects(prev => prev.map(s => ({ ...s, allocatedStaffId: '' })));
+
+    const newLog: AuditLog = {
+      id: 'log_' + Date.now(),
+      user: currentUser?.name || 'Admin',
+      action: 'Cleared all faculty accounts and deallocated subjects.',
+      timestamp: new Date().toISOString()
+    };
+    setAuditLogs(prev => [newLog, ...prev]);
+  };
+
+  const clearHODs = () => {
+    setUsers(prev => prev.filter(u => u.role !== 'hod'));
+
+    const newLog: AuditLog = {
+      id: 'log_' + Date.now(),
+      user: currentUser?.name || 'Admin',
+      action: 'Cleared all HOD accounts.',
       timestamp: new Date().toISOString()
     };
     setAuditLogs(prev => [newLog, ...prev]);
@@ -755,7 +782,9 @@ export const DatabaseProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       addStudent,
       updateStudent,
       deleteUser,
-      clearAssignmentsAndStaffs,
+      clearAssignments,
+      clearFaculty,
+      clearHODs,
       addSubject,
       deleteSubject,
       createAssignment,

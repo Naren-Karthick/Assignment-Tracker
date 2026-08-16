@@ -11,7 +11,7 @@ export const AdminDashboard: React.FC = () => {
   const { 
     users, subjects, assignments, submissions, auditLogs, 
     changePassword, addHOD, updateHOD, addFaculty, updateFaculty, 
-    addStudent, updateStudent, deleteUser, resetDatabase, clearAssignmentsAndStaffs
+    addStudent, updateStudent, deleteUser, resetDatabase, clearAssignments, clearFaculty, clearHODs
   } = useDatabase();
 
   const [activeTab, setActiveTab] = useState<'overview' | 'users' | 'passwords' | 'logs' | 'coursework'>('overview');
@@ -169,21 +169,45 @@ export const AdminDashboard: React.FC = () => {
           </button>
           <button 
             onClick={() => {
-              if (confirm("Are you sure you want to delete all assignments, submissions, and staff accounts (HOD & Faculty)? This action is irreversible.")) {
-                clearAssignmentsAndStaffs();
-                showToast("Cleared all assignments and staff accounts.");
+              if (confirm("Are you sure you want to delete all assignments and submissions? This action is irreversible.")) {
+                clearAssignments();
+                showToast("Cleared all assignments.");
               }
             }}
-            className="flex items-center gap-1.5 rounded-lg border border-red-900 bg-red-950/20 px-3.5 py-2 text-sm font-semibold text-red-400 hover:bg-red-950/40 hover:border-red-700 transition-all duration-200"
+            className="flex items-center gap-1.5 rounded-lg border border-red-900 bg-red-950/20 px-3 py-1.5 text-xs font-semibold text-red-400 hover:bg-red-950/45 hover:border-red-750 transition-all duration-200"
           >
-            <Trash2 className="h-4 w-4" />
-            <span>Clear Assignments & Staffs</span>
+            <Trash2 className="h-3.5 w-3.5" />
+            <span>Clear Assignments</span>
+          </button>
+          <button 
+            onClick={() => {
+              if (confirm("Are you sure you want to delete all faculty accounts and deallocate subjects? This action is irreversible.")) {
+                clearFaculty();
+                showToast("Cleared all faculty accounts.");
+              }
+            }}
+            className="flex items-center gap-1.5 rounded-lg border border-red-900 bg-red-950/20 px-3 py-1.5 text-xs font-semibold text-red-400 hover:bg-red-950/45 hover:border-red-750 transition-all duration-200"
+          >
+            <Trash2 className="h-3.5 w-3.5" />
+            <span>Clear Faculty</span>
+          </button>
+          <button 
+            onClick={() => {
+              if (confirm("Are you sure you want to delete all HOD accounts? This action is irreversible.")) {
+                clearHODs();
+                showToast("Cleared all HOD accounts.");
+              }
+            }}
+            className="flex items-center gap-1.5 rounded-lg border border-red-900 bg-red-950/20 px-3 py-1.5 text-xs font-semibold text-red-400 hover:bg-red-950/45 hover:border-red-750 transition-all duration-200"
+          >
+            <Trash2 className="h-3.5 w-3.5" />
+            <span>Clear HODs</span>
           </button>
           <button 
             onClick={resetDatabase}
-            className="flex items-center gap-1.5 rounded-lg border border-red-950 bg-red-900/10 px-3.5 py-2 text-sm font-semibold text-red-400 hover:bg-red-900/20 hover:border-red-800 transition-all duration-200"
+            className="flex items-center gap-1.5 rounded-lg border border-red-950 bg-red-900/10 px-3 py-1.5 text-xs font-semibold text-red-400 hover:bg-red-900/20 hover:border-red-800 transition-all duration-200"
           >
-            <RefreshCw className="h-4 w-4" />
+            <RefreshCw className="h-3.5 w-3.5" />
             <span>Reset Database</span>
           </button>
         </div>

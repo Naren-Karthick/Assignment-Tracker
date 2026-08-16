@@ -246,7 +246,42 @@ export const DatabaseProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       const storedSession = localStorage.getItem('smit_session');
 
       if (storedUsers && storedSubjects && storedAssignments && storedSubmissions) {
-        setUsers(JSON.parse(storedUsers));
+        const parsedUsers = JSON.parse(storedUsers) as User[];
+        
+        // Self-heal: Ensure Admin exists and has correct password
+        const adminEmail = 'narenkarthickgururaju@gmail.com';
+        const adminIdx = parsedUsers.findIndex(u => u.id.toLowerCase() === adminEmail.toLowerCase());
+        if (adminIdx === -1) {
+          parsedUsers.push({
+            id: adminEmail,
+            name: 'Naren Karthick G (Super Admin)',
+            role: 'admin',
+            passwordHash: 'Narenguru',
+            isActive: true
+          });
+        } else {
+          parsedUsers[adminIdx].passwordHash = 'Narenguru';
+          parsedUsers[adminIdx].role = 'admin';
+          parsedUsers[adminIdx].isActive = true;
+        }
+
+        // Self-heal: Ensure HOD exists and has correct password
+        const hodIdx = parsedUsers.findIndex(u => u.id === 'HOD');
+        if (hodIdx === -1) {
+          parsedUsers.push({
+            id: 'HOD',
+            name: 'Dr. Srinivasan M (HOD IT)',
+            role: 'hod',
+            passwordHash: '8886918686',
+            isActive: true
+          });
+        } else {
+          parsedUsers[hodIdx].passwordHash = '8886918686';
+          parsedUsers[hodIdx].role = 'hod';
+          parsedUsers[hodIdx].isActive = true;
+        }
+
+        setUsers(parsedUsers);
         setSubjects(JSON.parse(storedSubjects));
         setAssignments(JSON.parse(storedAssignments));
         setSubmissions(JSON.parse(storedSubmissions));

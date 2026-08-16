@@ -288,17 +288,62 @@ const getSeedData = () => {
   };
 };
 
-export async function GET() {
+async function getDB() {
+  if (process.env.KV_REST_API_URL && process.env.KV_REST_API_TOKEN) {
+    try {
+      const res = await fetch(`${process.env.KV_REST_API_URL}/get/smit_db`, {
+        headers: {
+          Authorization: `Bearer ${process.env.KV_REST_API_TOKEN}`
+        },
+        next: { revalidate: 0 }
+      });
+      const data = await res.json();
+      if (data && data.result) {
+        return JSON.parse(data.result);
+      }
+    } catch (err) {
+      console.error("KV Read Error, falling back to local file:", err);
+    }
+  }
+
+  // Fallback to local file db.json
   if (!fs.existsSync(DB_FILE)) {
     const data = getSeedData();
     fs.writeFileSync(DB_FILE, JSON.stringify(data, null, 2));
+    return data;
   }
   const fileContent = fs.readFileSync(DB_FILE, 'utf-8');
-  return NextResponse.json(JSON.parse(fileContent));
+  return JSON.parse(fileContent);
+}
+
+async function saveDB(data: any) {
+  if (process.env.KV_REST_API_URL && process.env.KV_REST_API_TOKEN) {
+    try {
+      await fetch(process.env.KV_REST_API_URL, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${process.env.KV_REST_API_TOKEN}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(['SET', 'smit_db', JSON.stringify(data)])
+      });
+      return;
+    } catch (err) {
+      console.error("KV Write Error, falling back to local file:", err);
+    }
+  }
+
+  // Fallback to local file db.json
+  fs.writeFileSync(DB_FILE, JSON.stringify(data, null, 2));
+}
+
+export async function GET() {
+  const data = await getDB();
+  return NextResponse.json(data);
 }
 
 export async function POST(request: Request) {
   const data = await request.json();
-  fs.writeFileSync(DB_FILE, JSON.stringify(data, null, 2));
+  await saveDB(data);
   return NextResponse.json({ success: true });
 }

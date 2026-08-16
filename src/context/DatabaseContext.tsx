@@ -212,6 +212,7 @@ interface DatabaseContextType {
   addStudent: (registerNo: string, name: string, year: '2nd_year' | '3rd_year' | '4th_year') => void;
   updateStudent: (registerNo: string, name: string, year: '2nd_year' | '3rd_year' | '4th_year') => void;
   deleteUser: (userId: string) => void;
+  clearAssignmentsAndStaffs: () => void;
   // HOD Methods
   addSubject: (code: string, name: string, semester: string, year: '2nd_year' | '3rd_year' | '4th_year', allocatedStaffId: string) => void;
   deleteSubject: (code: string) => void;
@@ -612,6 +613,20 @@ export const DatabaseProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     setAuditLogs(prev => [newLog, ...prev]);
   };
 
+  const clearAssignmentsAndStaffs = () => {
+    setAssignments([]);
+    setSubmissions([]);
+    setUsers(prev => prev.filter(u => u.role !== 'faculty' && u.role !== 'hod'));
+
+    const newLog: AuditLog = {
+      id: 'log_' + Date.now(),
+      user: currentUser?.name || 'Admin',
+      action: 'Cleared all assignments, submissions, and teaching staff (HOD & Faculty) accounts.',
+      timestamp: new Date().toISOString()
+    };
+    setAuditLogs(prev => [newLog, ...prev]);
+  };
+
   // HOD Methods
   const addSubject = (code: string, name: string, semester: string, year: '2nd_year' | '3rd_year' | '4th_year', allocatedStaffId: string) => {
     const newSubject: Subject = {
@@ -740,6 +755,7 @@ export const DatabaseProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       addStudent,
       updateStudent,
       deleteUser,
+      clearAssignmentsAndStaffs,
       addSubject,
       deleteSubject,
       createAssignment,

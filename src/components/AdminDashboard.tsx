@@ -11,7 +11,7 @@ export const AdminDashboard: React.FC = () => {
   const { 
     users, subjects, assignments, submissions, auditLogs, 
     changePassword, addHOD, updateHOD, addFaculty, updateFaculty, 
-    addStudent, updateStudent, deleteUser, resetDatabase 
+    addStudent, updateStudent, deleteUser, resetDatabase, clearAssignmentsAndStaffs
   } = useDatabase();
 
   const [activeTab, setActiveTab] = useState<'overview' | 'users' | 'passwords' | 'logs' | 'coursework'>('overview');
@@ -166,6 +166,18 @@ export const AdminDashboard: React.FC = () => {
           >
             <UserPlus className="h-4 w-4" />
             <span>Simulate Bulk Upload</span>
+          </button>
+          <button 
+            onClick={() => {
+              if (confirm("Are you sure you want to delete all assignments, submissions, and staff accounts (HOD & Faculty)? This action is irreversible.")) {
+                clearAssignmentsAndStaffs();
+                showToast("Cleared all assignments and staff accounts.");
+              }
+            }}
+            className="flex items-center gap-1.5 rounded-lg border border-red-900 bg-red-950/20 px-3.5 py-2 text-sm font-semibold text-red-400 hover:bg-red-950/40 hover:border-red-700 transition-all duration-200"
+          >
+            <Trash2 className="h-4 w-4" />
+            <span>Clear Assignments & Staffs</span>
           </button>
           <button 
             onClick={resetDatabase}

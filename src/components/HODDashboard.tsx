@@ -561,8 +561,8 @@ export const HODDashboard: React.FC<{ isEmbedded?: boolean }> = ({ isEmbedded = 
             </div>
           )}
 
-          {/* Subjects Table */}
-          <div className="overflow-hidden rounded-xl border border-slate-800 bg-slate-900/20 backdrop-blur-md">
+          {/* Subjects Table (Desktop View) */}
+          <div className="hidden md:block overflow-hidden rounded-xl border border-slate-800 bg-slate-900/20 backdrop-blur-md">
             <div className="overflow-x-auto">
               <table className="w-full text-left border-collapse">
                 <thead>
@@ -613,6 +613,56 @@ export const HODDashboard: React.FC<{ isEmbedded?: boolean }> = ({ isEmbedded = 
                 </tbody>
               </table>
             </div>
+          </div>
+
+          {/* Subjects Cards (Mobile View) */}
+          <div className="grid grid-cols-1 gap-4 md:hidden">
+            {subjects.length === 0 ? (
+              <div className="rounded-xl border border-slate-800 bg-slate-900/20 p-8 text-center text-slate-500 text-sm">
+                No subjects configured yet.
+              </div>
+            ) : (
+              subjects.map(s => {
+                const allocatedTeacher = users.find(u => u.id === s.allocatedStaffId);
+
+                return (
+                  <div key={s.code} className="rounded-xl border border-slate-800 bg-slate-900/30 p-5 space-y-4">
+                    <div className="flex justify-between items-start">
+                      <div>
+                        <span className="text-xs font-mono font-bold text-indigo-400 bg-indigo-500/10 px-2 py-0.5 rounded border border-indigo-500/25">{s.code}</span>
+                        <h4 className="font-bold text-white text-base mt-2">{s.name}</h4>
+                      </div>
+                      <button
+                        onClick={() => {
+                          if (confirm(`Are you sure you want to delete ${s.name} (${s.code})?`)) {
+                            deleteSubject(s.code);
+                          }
+                        }}
+                        className="p-1.5 text-slate-500 hover:text-red-400 hover:bg-slate-800/40 rounded transition-colors"
+                        title="Delete Subject"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </button>
+                    </div>
+
+                    <div className="pt-3 border-t border-slate-800/60 flex flex-col gap-2 text-xs">
+                      <div className="flex justify-between">
+                        <span className="text-slate-400">Class:</span>
+                        <span className="font-semibold text-slate-200 uppercase">{s.year.replace('_', ' ')}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-slate-400">Semester:</span>
+                        <span className="text-slate-200">{s.semester}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-slate-400">Allocated Staff:</span>
+                        <span className="font-medium text-indigo-300">{allocatedTeacher?.name || 'Unassigned'}</span>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })
+            )}
           </div>
         </div>
       )}

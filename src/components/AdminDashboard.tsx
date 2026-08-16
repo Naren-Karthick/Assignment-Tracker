@@ -160,7 +160,7 @@ export const AdminDashboard: React.FC = () => {
           <h2 className="text-2xl font-bold tracking-tight text-white sm:text-3xl">Super Admin Control Center</h2>
           <p className="mt-1 text-sm text-slate-400">Manage institutional roster, HOD and Faculty accounts, change passwords, and view system logs.</p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
           <button 
             onClick={handleBulkUploadSimulation}
             className="flex items-center gap-1.5 rounded-lg border border-slate-700 bg-slate-800 px-3.5 py-2 text-sm font-semibold text-slate-300 hover:bg-slate-700 hover:text-white transition-all duration-200"
@@ -546,8 +546,8 @@ export const AdminDashboard: React.FC = () => {
             </div>
           )}
 
-          {/* User Roster Table */}
-          <div className="overflow-hidden rounded-xl border border-slate-800 bg-slate-900/20 backdrop-blur-md">
+          {/* User Roster Table (Desktop View) */}
+          <div className="hidden md:block overflow-hidden rounded-xl border border-slate-800 bg-slate-900/20 backdrop-blur-md">
             <div className="overflow-x-auto">
               <table className="w-full text-left border-collapse">
                 <thead>
@@ -621,6 +621,69 @@ export const AdminDashboard: React.FC = () => {
                 </tbody>
               </table>
             </div>
+          </div>
+
+          {/* User Cards (Mobile View) */}
+          <div className="grid grid-cols-1 gap-4 md:hidden">
+            {filteredUsers.length === 0 ? (
+              <div className="rounded-xl border border-slate-800 bg-slate-900/20 p-8 text-center text-slate-500 text-sm">
+                No users match the active filters or search terms.
+              </div>
+            ) : (
+              filteredUsers.map((u) => (
+                <div key={u.id} className="rounded-xl border border-slate-800 bg-slate-900/30 p-5 space-y-4">
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <h4 className="font-bold text-white text-base leading-snug">{u.name}</h4>
+                      <p className="text-xs font-mono text-slate-500 mt-0.5">{u.id}</p>
+                    </div>
+                    <span className={`inline-flex items-center rounded px-2 py-0.5 text-[10px] font-semibold border ${
+                      u.role === 'admin' ? 'bg-indigo-500/10 text-indigo-400 border-indigo-500/20' :
+                      u.role === 'hod' ? 'bg-purple-500/10 text-purple-400 border-purple-500/20' :
+                      u.role === 'faculty' ? 'bg-pink-500/10 text-pink-400 border-pink-500/20' :
+                      'bg-slate-500/10 text-slate-400 border-slate-800'
+                    } uppercase tracking-wider`}>
+                      {u.role}
+                    </span>
+                  </div>
+
+                  <div className="flex justify-between items-center text-xs pt-3 border-t border-slate-800/60">
+                    <span>
+                      {u.role === 'student' ? (
+                        <span className="uppercase text-indigo-400 font-mono text-xs">{u.targetYear?.replace('_', ' ')}</span>
+                      ) : (
+                        <span className={`inline-flex items-center gap-1.5 ${u.isActive ? 'text-emerald-400' : 'text-slate-500'}`}>
+                          <span className={`h-1.5 w-1.5 rounded-full ${u.isActive ? 'bg-emerald-400' : 'bg-slate-500'}`}></span>
+                          {u.isActive ? 'Active' : 'Suspended'}
+                        </span>
+                      )}
+                    </span>
+
+                    {/* Actions */}
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => handleEditClick(u)}
+                        className="rounded bg-indigo-650 px-3 py-1 text-xs font-semibold text-white hover:bg-indigo-550 transition-colors"
+                      >
+                        Edit
+                      </button>
+                      {u.role !== 'admin' && (
+                        <button
+                          onClick={() => {
+                            if (confirm(`Delete ${u.name}? All academic progress associated will be removed.`)) {
+                              deleteUser(u.id);
+                            }
+                          }}
+                          className="rounded bg-red-950/40 border border-red-900/30 px-3 py-1 text-xs font-semibold text-red-400 hover:bg-red-900/20 transition-colors"
+                        >
+                          Delete
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              ))
+            )}
           </div>
         </div>
       )}

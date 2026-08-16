@@ -21,14 +21,16 @@ export const Header: React.FC<HeaderProps> = () => {
               <School className="h-5 w-5 text-white" />
             </div>
             <div>
-              <h1 className="text-sm font-bold tracking-tight text-white sm:text-base">
-                Sri Muthukumaran Institute of Technology
+              <h1 className="text-xs font-bold tracking-tight text-white sm:text-base">
+                <span className="hidden xs:inline sm:inline">Sri Muthukumaran Institute of Technology</span>
+                <span className="inline xs:hidden sm:hidden">SMIT IT</span>
               </h1>
-              <div className="flex items-center gap-1.5 text-xs text-indigo-400 font-medium">
-                <GraduationCap className="h-3 w-3" />
-                <span>Department of Information Technology</span>
+              <div className="flex items-center gap-1 text-[10px] sm:text-xs text-indigo-400 font-medium">
+                <GraduationCap className="h-2.5 w-2.5 sm:h-3 sm:w-3" />
+                <span className="hidden sm:inline">Department of Information Technology</span>
+                <span className="inline sm:hidden">Dept of IT</span>
                 <span className="text-slate-500">•</span>
-                <span>AY 2026–2027</span>
+                <span>AY 2026–27</span>
               </div>
             </div>
           </div>

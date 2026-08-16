@@ -242,7 +242,32 @@ export const DatabaseProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     const loadDatabase = async () => {
       try {
         const res = await fetch('/api/db');
-        const db = await res.json();
+        let db = await res.json();
+
+        // Self-Healing Local Backup: Check if local storage has a newer version than server (Vercel reset recovery)
+        if (typeof window !== 'undefined') {
+          const localBackupStr = localStorage.getItem('smit_db_backup');
+          if (localBackupStr) {
+            try {
+              const localBackup = JSON.parse(localBackupStr);
+              const serverTime = new Date(db.lastUpdated || '2026-08-16T00:00:00.000Z').getTime();
+              const localTime = new Date(localBackup.lastUpdated || '1970-01-01T00:00:00.000Z').getTime();
+
+              if (localTime > serverTime) {
+                console.log("Restoring serverless database state from browser localStorage backup...");
+                db = localBackup;
+                // Instantly upload to restore server-side JSON/Redis state
+                fetch('/api/db', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify(localBackup)
+                }).catch(e => console.error("Failed to restore serverless db from local backup:", e));
+              }
+            } catch (backupErr) {
+              console.error("Local DB backup parse failed:", backupErr);
+            }
+          }
+        }
 
         // Ensure Admin exists (self-healing migration)
         const adminEmail = 'narenkarthickgururaju@gmail.com';
@@ -299,23 +324,31 @@ export const DatabaseProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     loadDatabase();
   }, []);
 
-  // Save changes to Server API
+  // Save changes to Server API and local device backup
   useEffect(() => {
     if (isInitialized && typeof window !== 'undefined') {
       const saveDatabase = async () => {
         try {
+          const timestamp = new Date().toISOString();
+          const dbPayload = {
+            users,
+            subjects,
+            assignments,
+            submissions,
+            auditLogs,
+            lastUpdated: timestamp
+          };
+
+          // Save to Local Device Backup
+          localStorage.setItem('smit_db_backup', JSON.stringify(dbPayload));
+
+          // Save to Server
           await fetch('/api/db', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json'
             },
-            body: JSON.stringify({
-              users,
-              subjects,
-              assignments,
-              submissions,
-              auditLogs
-            })
+            body: JSON.stringify(dbPayload)
           });
         } catch (err) {
           console.error("Failed to save database state to server:", err);
@@ -359,6 +392,19 @@ export const DatabaseProvider: React.FC<{ children: React.ReactNode }> = ({ chil
           setAssignments(db.assignments || []);
           setSubmissions(db.submissions || []);
           setAuditLogs(db.auditLogs || []);
+
+          // Sync our local backup with the new server state
+          if (typeof window !== 'undefined') {
+            const timestamp = db.lastUpdated || new Date().toISOString();
+            localStorage.setItem('smit_db_backup', JSON.stringify({
+              users: db.users || [],
+              subjects: db.subjects || [],
+              assignments: db.assignments || [],
+              submissions: db.submissions || [],
+              auditLogs: db.auditLogs || [],
+              lastUpdated: timestamp
+            }));
+          }
         }
       } catch (err) {
         console.error("Failed to sync database in background:", err);

@@ -284,7 +284,8 @@ const getSeedData = () => {
     subjects: seedSubjects,
     assignments: seedAssignments,
     submissions: seedSubmissions,
-    auditLogs: seedLogs
+    auditLogs: seedLogs,
+    lastUpdated: "2026-08-16T00:00:00.000Z"
   };
 };
 

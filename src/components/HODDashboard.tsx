@@ -8,7 +8,7 @@ import {
   Plus, Trash2, ShieldAlert, Award, ChevronRight, X, Search 
 } from 'lucide-react';
 
-export const HODDashboard: React.FC = () => {
+export const HODDashboard: React.FC<{ isEmbedded?: boolean }> = ({ isEmbedded = false }) => {
   const { 
     users, subjects, assignments, submissions, 
     addFaculty, updateFaculty, deleteUser,
@@ -32,8 +32,8 @@ export const HODDashboard: React.FC = () => {
   const [subYear, setSubYear] = useState<'2nd_year' | '3rd_year' | '4th_year'>('2nd_year');
   const [subStaffId, setSubStaffId] = useState('');
 
-  // Fetch Faculty List + include HOD since HOD will take class
-  const facultyUsers = users.filter(u => u.role === 'faculty' || u.role === 'hod');
+  // Fetch Faculty List + HOD + Admin (so Admin/HOD can also take classes)
+  const facultyUsers = users.filter(u => u.role === 'faculty' || u.role === 'hod' || u.role === 'admin');
 
   // Semester dropdown list
   const semesters = [
@@ -101,23 +101,36 @@ export const HODDashboard: React.FC = () => {
   };
 
   return (
-    <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+    <div className={isEmbedded ? "" : "mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8"}>
       {/* Page header */}
-      <div className="mb-8 flex flex-col justify-between gap-4 border-b border-slate-800 pb-5 sm:flex-row sm:items-center">
-        <div>
-          <h2 className="text-2xl font-bold tracking-tight text-white sm:text-3xl">HOD Dashboard</h2>
-          <p className="mt-1 text-sm text-slate-400">Department of Information Technology • Academic Management & Quality Assurance.</p>
+      {!isEmbedded ? (
+        <div className="mb-8 flex flex-col justify-between gap-4 border-b border-slate-800 pb-5 sm:flex-row sm:items-center">
+          <div>
+            <h2 className="text-2xl font-bold tracking-tight text-white sm:text-3xl">HOD Dashboard</h2>
+            <p className="mt-1 text-sm text-slate-400">Department of Information Technology • Academic Management & Quality Assurance.</p>
+          </div>
+          <div className="flex gap-2">
+            <button 
+              onClick={exportAnalyticsToCSV}
+              className="flex items-center gap-1.5 rounded-lg bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white shadow-md hover:bg-indigo-500 transition-all duration-200"
+            >
+              <Download className="h-4 w-4" />
+              <span>Export Analytics (CSV)</span>
+            </button>
+          </div>
         </div>
-        <div className="flex gap-2">
+      ) : (
+        <div className="mb-4 flex justify-between items-center border-b border-slate-800 pb-3">
+          <p className="text-sm font-medium text-slate-400">Department management and subject allocations workspace.</p>
           <button 
             onClick={exportAnalyticsToCSV}
-            className="flex items-center gap-1.5 rounded-lg bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white shadow-md hover:bg-indigo-500 transition-all duration-200"
+            className="flex items-center gap-1.5 rounded-lg bg-indigo-600 px-4 py-2 text-xs font-semibold text-white shadow-md hover:bg-indigo-500 transition-all duration-200"
           >
-            <Download className="h-4 w-4" />
-            <span>Export Analytics (CSV)</span>
+            <Download className="h-3.5 w-3.5" />
+            <span>Export Analytics</span>
           </button>
         </div>
-      </div>
+      )}
 
       {/* Tabs */}
       <div className="flex gap-2 border-b border-slate-800 mb-8 overflow-x-auto pb-px">

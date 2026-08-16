@@ -4,8 +4,10 @@ import React, { useState } from 'react';
 import { useDatabase, User, SEED_ROSTERS } from '@/context/DatabaseContext';
 import { 
   Users, Key, ShieldAlert, FileText, CheckCircle2, UserPlus, 
-  Settings, RefreshCw, Trash2, Edit, Check, X, Search, Filter, BookOpen, Calendar
+  Settings, RefreshCw, Trash2, Edit, Check, X, Search, Filter, BookOpen, Calendar, Award, GraduationCap
 } from 'lucide-react';
+import { HODDashboard } from './HODDashboard';
+import { FacultyDashboard } from './FacultyDashboard';
 
 export const AdminDashboard: React.FC = () => {
   const { 
@@ -14,7 +16,7 @@ export const AdminDashboard: React.FC = () => {
     addStudent, updateStudent, deleteUser, resetDatabase, clearAssignments, clearFaculty, clearHODs
   } = useDatabase();
 
-  const [activeTab, setActiveTab] = useState<'overview' | 'users' | 'passwords' | 'logs' | 'coursework'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'users' | 'passwords' | 'logs' | 'coursework' | 'hod-panel' | 'teaching-panel'>('overview');
   const [userSearch, setUserSearch] = useState('');
   const [roleFilter, setRoleFilter] = useState<'all' | 'hod' | 'faculty' | 'student'>('all');
   const [yearFilter, setYearFilter] = useState<'all' | '2nd_year' | '3rd_year' | '4th_year'>('all');
@@ -248,6 +250,20 @@ export const AdminDashboard: React.FC = () => {
         >
           <BookOpen className="h-4 w-4" />
           <span>Academic Coursework</span>
+        </button>
+        <button
+          onClick={() => setActiveTab('hod-panel')}
+          className={`flex items-center gap-2 border-b-2 px-4 py-3 text-sm font-medium transition-all duration-200 whitespace-nowrap ${activeTab === 'hod-panel' ? 'border-indigo-500 text-indigo-400' : 'border-transparent text-slate-400 hover:text-slate-200'}`}
+        >
+          <Award className="h-4 w-4" />
+          <span>HOD Workspace</span>
+        </button>
+        <button
+          onClick={() => setActiveTab('teaching-panel')}
+          className={`flex items-center gap-2 border-b-2 px-4 py-3 text-sm font-medium transition-all duration-200 whitespace-nowrap ${activeTab === 'teaching-panel' ? 'border-indigo-500 text-indigo-400' : 'border-transparent text-slate-400 hover:text-slate-200'}`}
+        >
+          <GraduationCap className="h-4 w-4" />
+          <span>Teaching Workspace</span>
         </button>
         <button
           onClick={() => setActiveTab('logs')}
@@ -764,6 +780,18 @@ export const AdminDashboard: React.FC = () => {
               })
             )}
           </div>
+        </div>
+      )}
+
+      {activeTab === 'hod-panel' && (
+        <div className="rounded-xl border border-slate-800 bg-slate-900/10 p-6 animate-in fade-in-50 duration-200">
+          <HODDashboard isEmbedded={true} />
+        </div>
+      )}
+
+      {activeTab === 'teaching-panel' && (
+        <div className="rounded-xl border border-slate-800 bg-slate-900/10 p-6 animate-in fade-in-50 duration-200">
+          <FacultyDashboard isEmbedded={true} />
         </div>
       )}
     </div>

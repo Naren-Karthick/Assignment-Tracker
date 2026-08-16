@@ -284,7 +284,8 @@ const getSeedData = () => {
     subjects: seedSubjects,
     assignments: seedAssignments,
     submissions: seedSubmissions,
-    auditLogs: seedLogs
+    auditLogs: seedLogs,
+    notifications: []
   };
 };
 

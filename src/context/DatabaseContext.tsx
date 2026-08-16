@@ -193,6 +193,15 @@ export interface AuditLog {
   timestamp: string;
 }
 
+export interface Notification {
+  id: string;
+  userId: string;
+  title: string;
+  message: string;
+  isRead: boolean;
+  createdAt: string;
+}
+
 interface DatabaseContextType {
   currentUser: User | null;
   users: User[];
@@ -203,6 +212,8 @@ interface DatabaseContextType {
   login: (id: string, password: string) => boolean;
   logout: () => void;
   resetDatabase: () => void;
+  notifications: Notification[];
+  markNotificationsAsRead: (userId: string) => void;
   // Admin Methods
   changePassword: (userId: string, newPassword: string) => void;
   addHOD: (name: string, email: string, password: string) => void;
@@ -233,6 +244,7 @@ export const DatabaseProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   const [assignments, setAssignments] = useState<Assignment[]>([]);
   const [submissions, setSubmissions] = useState<Submission[]>([]);
   const [auditLogs, setAuditLogs] = useState<AuditLog[]>([]);
+  const [notifications, setNotifications] = useState<Notification[]>([]);
   const [isInitialized, setIsInitialized] = useState(false);
 
   // Initialize DB from Server API
@@ -281,6 +293,7 @@ export const DatabaseProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         setAssignments(db.assignments);
         setSubmissions(db.submissions);
         setAuditLogs(db.auditLogs);
+        setNotifications(db.notifications || []);
 
         // Session remains local to the device browser
         const storedSession = localStorage.getItem('smit_session');
@@ -312,7 +325,8 @@ export const DatabaseProvider: React.FC<{ children: React.ReactNode }> = ({ chil
               subjects,
               assignments,
               submissions,
-              auditLogs
+              auditLogs,
+              notifications
             })
           });
         } catch (err) {
@@ -763,6 +777,17 @@ export const DatabaseProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     }));
     setSubmissions(prev => [...prev, ...newSubs]);
 
+    // Create notifications for all target students
+    const newNotifs = targetStudents.map((student, idx) => ({
+      id: 'notif_' + (Date.now() + idx),
+      userId: student.id,
+      title: `New ${type}: ${title}`,
+      message: `A new ${type.toLowerCase()} has been posted for ${sub?.name || subjectCode}. Due date is ${dueDate}.`,
+      isRead: false,
+      createdAt: new Date().toISOString()
+    }));
+    setNotifications(prev => [...newNotifs, ...prev]);
+
     const newLog: AuditLog = {
       id: 'log_' + Date.now(),
       user: currentUser?.name || 'Faculty',
@@ -770,6 +795,10 @@ export const DatabaseProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       timestamp: new Date().toISOString()
     };
     setAuditLogs(prev => [newLog, ...prev]);
+  };
+
+  const markNotificationsAsRead = (userId: string) => {
+    setNotifications(prev => prev.map(n => n.userId === userId ? { ...n, isRead: true } : n));
   };
 
   const deleteAssignment = (assignmentId: string) => {
@@ -838,7 +867,9 @@ export const DatabaseProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       deleteSubject,
       createAssignment,
       deleteAssignment,
-      evaluateSubmission
+      evaluateSubmission,
+      notifications,
+      markNotificationsAsRead
     }}>
       {children}
     </DatabaseContext.Provider>

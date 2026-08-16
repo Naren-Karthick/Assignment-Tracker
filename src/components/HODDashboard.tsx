@@ -12,11 +12,12 @@ export const HODDashboard: React.FC<{ isEmbedded?: boolean }> = ({ isEmbedded = 
   const { 
     users, subjects, assignments, submissions, 
     addFaculty, updateFaculty, deleteUser,
-    addSubject, deleteSubject 
+    addSubject, updateSubjectStaff, deleteSubject 
   } = useDatabase();
 
   const [activeTab, setActiveTab] = useState<'analytics' | 'staff' | 'subjects' | 'teaching'>('analytics');
   const [selectedAssignmentDetails, setSelectedAssignmentDetails] = useState<Assignment | null>(null);
+  const [editingSubjectCode, setEditingSubjectCode] = useState<string | null>(null);
 
   // Form States for Staff
   const [showStaffModal, setShowStaffModal] = useState(false);
@@ -589,10 +590,37 @@ export const HODDashboard: React.FC<{ isEmbedded?: boolean }> = ({ isEmbedded = 
                           </div>
                         </td>
                         <td className="px-6 py-4">
-                          <div className="flex flex-col">
-                            <span className="font-medium text-slate-300">{allocatedTeacher?.name || 'Unassigned'}</span>
-                            <span className="text-[10px] text-slate-500 font-mono">{s.allocatedStaffId}</span>
-                          </div>
+                          {editingSubjectCode === s.code ? (
+                            <select
+                              value={s.allocatedStaffId}
+                              onChange={(e) => {
+                                updateSubjectStaff(s.code, e.target.value);
+                                setEditingSubjectCode(null);
+                              }}
+                              onBlur={() => setEditingSubjectCode(null)}
+                              className="rounded-lg border border-slate-700 bg-slate-950 px-2.5 py-1 text-xs text-slate-200 focus:border-indigo-500 focus:outline-none"
+                              autoFocus
+                            >
+                              <option value="">-- Select Staff --</option>
+                              {allocableStaff.map(f => (
+                                <option key={f.id} value={f.id}>{f.name}</option>
+                              ))}
+                            </select>
+                          ) : (
+                            <div className="flex items-center gap-2 group">
+                              <div className="flex flex-col">
+                                <span className="font-medium text-slate-300">{allocatedTeacher?.name || 'Unassigned'}</span>
+                                <span className="text-[10px] text-slate-500 font-mono">{s.allocatedStaffId}</span>
+                              </div>
+                              <button
+                                onClick={() => setEditingSubjectCode(s.code)}
+                                className="text-[10px] text-indigo-400 opacity-0 group-hover:opacity-100 hover:text-indigo-350 transition-opacity ml-1.5 font-semibold"
+                                title="Change Staff"
+                              >
+                                Edit
+                              </button>
+                            </div>
+                          )}
                         </td>
                         <td className="px-6 py-4 text-right">
                           <button
@@ -654,9 +682,35 @@ export const HODDashboard: React.FC<{ isEmbedded?: boolean }> = ({ isEmbedded = 
                         <span className="text-slate-400">Semester:</span>
                         <span className="text-slate-200">{s.semester}</span>
                       </div>
-                      <div className="flex justify-between">
+                      <div className="flex justify-between items-center">
                         <span className="text-slate-400">Allocated Staff:</span>
-                        <span className="font-medium text-indigo-300">{allocatedTeacher?.name || 'Unassigned'}</span>
+                        {editingSubjectCode === s.code ? (
+                          <select
+                            value={s.allocatedStaffId}
+                            onChange={(e) => {
+                              updateSubjectStaff(s.code, e.target.value);
+                              setEditingSubjectCode(null);
+                            }}
+                            onBlur={() => setEditingSubjectCode(null)}
+                            className="rounded-lg border border-slate-700 bg-slate-950 px-2 py-1 text-xs text-slate-250 focus:border-indigo-500 focus:outline-none"
+                            autoFocus
+                          >
+                            <option value="">-- Select Staff --</option>
+                            {allocableStaff.map(f => (
+                              <option key={f.id} value={f.id}>{f.name}</option>
+                            ))}
+                          </select>
+                        ) : (
+                          <div className="flex items-center gap-1.5">
+                            <span className="font-medium text-indigo-350">{allocatedTeacher?.name || 'Unassigned'}</span>
+                            <button
+                              onClick={() => setEditingSubjectCode(s.code)}
+                              className="text-[10px] text-indigo-400 hover:text-indigo-300 font-semibold"
+                            >
+                              (Edit)
+                            </button>
+                          </div>
+                        )}
                       </div>
                     </div>
                   </div>

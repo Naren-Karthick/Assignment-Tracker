@@ -218,6 +218,7 @@ interface DatabaseContextType {
   clearHODs: () => void;
   // HOD Methods
   addSubject: (code: string, name: string, semester: string, year: '2nd_year' | '3rd_year' | '4th_year', allocatedStaffId: string) => void;
+  updateSubjectStaff: (code: string, allocatedStaffId: string) => void;
   deleteSubject: (code: string) => void;
   // Faculty Methods
   createAssignment: (title: string, description: string, dueDate: string, subjectCode: string, year: '2nd_year' | '3rd_year' | '4th_year', type: 'Assignment' | 'Test' | 'Homework') => void;
@@ -768,6 +769,20 @@ export const DatabaseProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     setAuditLogs(prev => [newLog, ...prev]);
   };
 
+  const updateSubjectStaff = (code: string, allocatedStaffId: string) => {
+    setSubjects(prev => prev.map(s => s.code === code ? { ...s, allocatedStaffId } : s));
+
+    const sub = subjects.find(s => s.code === code);
+    const staffUser = users.find(u => u.id === allocatedStaffId);
+    const newLog: AuditLog = {
+      id: 'log_' + Date.now(),
+      user: currentUser?.name || 'HOD',
+      action: `Changed staff allocation for subject ${sub?.name || code} to ${staffUser?.name || allocatedStaffId}.`,
+      timestamp: new Date().toISOString()
+    };
+    setAuditLogs(prev => [newLog, ...prev]);
+  };
+
   const deleteSubject = (code: string) => {
     setSubjects(prev => prev.filter(s => s.code !== code));
     const newLog: AuditLog = {
@@ -879,6 +894,7 @@ export const DatabaseProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       clearFaculty,
       clearHODs,
       addSubject,
+      updateSubjectStaff,
       deleteSubject,
       createAssignment,
       deleteAssignment,

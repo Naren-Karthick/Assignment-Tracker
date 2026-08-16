@@ -4,15 +4,14 @@ import React, { useState } from 'react';
 import { useDatabase, Assignment } from '@/context/DatabaseContext';
 import { 
   ClipboardCheck, Clock, FileText, CheckCircle2, 
-  HelpCircle, ChevronRight, BookOpen, Send, Calendar, Bell, X
+  HelpCircle, ChevronRight, BookOpen, Send, Calendar 
 } from 'lucide-react';
 
 export const StudentDashboard: React.FC = () => {
-  const { currentUser, assignments, submissions, subjects, notifications, markNotificationsAsRead } = useDatabase();
+  const { currentUser, assignments, submissions, subjects } = useDatabase();
   const [filterSubject, setFilterSubject] = useState('all');
   const [filterStatus, setFilterStatus] = useState<'all' | 'Pending' | 'Completed' | 'Late' | 'Missing'>('all');
   const [filterType, setFilterType] = useState<'all' | 'Assignment' | 'Test' | 'Homework'>('all');
-  const [showNotificationsModal, setShowNotificationsModal] = useState(false);
 
   // Filter assignments based on student's year
   const studentYear = currentUser?.targetYear;
@@ -29,45 +28,8 @@ export const StudentDashboard: React.FC = () => {
     return matchesSubject && matchesStatus && matchesType;
   });
 
-  const myNotifications = notifications.filter(n => n.userId === currentUser?.id);
-  const unreadNotifications = myNotifications.filter(n => !n.isRead);
-
   return (
     <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-      {/* Alert banner for unread notifications */}
-      {unreadNotifications.length > 0 && (
-        <div className="mb-6 rounded-2xl border border-indigo-500/20 bg-indigo-950/15 p-5 backdrop-blur-md animate-in fade-in slide-in-from-top-4 duration-300">
-          <div className="flex items-center justify-between mb-3 pb-2.5 border-b border-indigo-500/10">
-            <div className="flex items-center gap-2">
-              <span className="relative flex h-2 w-2">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-indigo-400 opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-indigo-500"></span>
-              </span>
-              <h3 className="font-bold text-white text-sm">New Coursework Posted ({unreadNotifications.length})</h3>
-            </div>
-            <button
-              onClick={() => markNotificationsAsRead(currentUser?.id || '')}
-              className="text-xs font-semibold text-indigo-400 hover:text-indigo-300 transition-colors"
-            >
-              Mark all as read
-            </button>
-          </div>
-          <div className="space-y-2 max-h-40 overflow-y-auto pr-2">
-            {unreadNotifications.map(n => (
-              <div key={n.id} className="text-xs bg-slate-950/40 p-3 rounded-lg border border-slate-800/40 flex justify-between items-center">
-                <div>
-                  <p className="font-bold text-slate-200">{n.title}</p>
-                  <p className="text-slate-400 mt-0.5">{n.message}</p>
-                </div>
-                <span className="text-[10px] text-slate-500 whitespace-nowrap ml-4">
-                  {new Date(n.createdAt).toLocaleDateString()}
-                </span>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
       {/* Upper info card */}
       <div className="mb-8 rounded-2xl border border-indigo-500/20 bg-gradient-to-r from-slate-900 via-indigo-950/10 to-slate-900 p-6 sm:p-8">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
@@ -79,36 +41,6 @@ export const StudentDashboard: React.FC = () => {
             <p className="mt-2 text-sm text-slate-300">
               Welcome, <strong className="text-white">{currentUser?.name}</strong> (Register No: <code className="text-indigo-300 font-mono text-xs">{currentUser?.id}</code>)
             </p>
-            <div className="mt-4 flex flex-wrap gap-2">
-              <button
-                onClick={() => setShowNotificationsModal(true)}
-                className="relative flex items-center justify-center gap-1.5 rounded-lg border border-slate-700 bg-slate-800/40 px-3 py-1.5 text-xs font-semibold text-slate-350 hover:bg-slate-750 hover:text-white transition-all duration-200"
-              >
-                <Bell className="h-3.5 w-3.5 text-indigo-400" />
-                <span>Notification Center</span>
-                {notifications.filter(n => n.userId === currentUser?.id && !n.isRead).length > 0 && (
-                  <span className="absolute -top-1.5 -right-1.5 flex h-4 w-4 items-center justify-center rounded-full bg-indigo-650 text-[9px] font-bold text-white ring-2 ring-slate-950">
-                    {notifications.filter(n => n.userId === currentUser?.id && !n.isRead).length}
-                  </span>
-                )}
-              </button>
-              <button
-                onClick={() => {
-                  if (typeof window !== 'undefined' && 'Notification' in window) {
-                    Notification.requestPermission().then(permission => {
-                      if (permission === 'granted') {
-                        alert("System alerts enabled! You will now receive audio chimes and native system push notifications on this device.");
-                      }
-                    });
-                  } else {
-                    alert("This browser/device does not support native push notifications.");
-                  }
-                }}
-                className="flex items-center justify-center gap-1.5 rounded-lg border border-slate-700 bg-slate-800/40 px-3 py-1.5 text-xs font-semibold text-slate-350 hover:bg-slate-750 hover:text-white transition-all duration-200"
-              >
-                <span>Enable Push Alerts</span>
-              </button>
-            </div>
           </div>
 
           <div className="flex gap-4 text-center">
@@ -243,63 +175,6 @@ export const StudentDashboard: React.FC = () => {
           })
         )}
       </div>
-
-      {/* Notifications Modal */}
-      {showNotificationsModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 p-4 backdrop-blur-sm">
-          <div className="w-full max-w-md rounded-xl border border-slate-800 bg-slate-900 p-6 shadow-2xl animate-in zoom-in-95 duration-200">
-            <div className="flex items-center justify-between border-b border-slate-800 pb-4 mb-4">
-              <h3 className="text-lg font-bold text-white flex items-center gap-2">
-                <Bell className="h-5 w-5 text-indigo-400" />
-                <span>Notification History</span>
-              </h3>
-              <button onClick={() => setShowNotificationsModal(false)} className="text-slate-400 hover:text-white">
-                <X className="h-5 w-5" />
-              </button>
-            </div>
-
-            <div className="space-y-3 max-h-[350px] overflow-y-auto pr-2">
-              {notifications.filter(n => n.userId === currentUser?.id).length === 0 ? (
-                <p className="text-sm text-slate-500 italic text-center py-8">No notifications received yet.</p>
-              ) : (
-                notifications.filter(n => n.userId === currentUser?.id).map(n => (
-                  <div key={n.id} className={`p-3.5 rounded-lg border transition-all text-xs flex flex-col gap-1.5 ${
-                    n.isRead ? 'bg-slate-950/20 border-slate-850 text-slate-450' : 'bg-indigo-950/15 border-indigo-500/20 text-slate-200'
-                  }`}>
-                    <div className="flex justify-between items-center">
-                      <span className="font-bold">{n.title}</span>
-                      {!n.isRead && (
-                        <span className="h-1.5 w-1.5 rounded-full bg-indigo-500"></span>
-                      )}
-                    </div>
-                    <p className="leading-relaxed">{n.message}</p>
-                    <span className="text-[9px] text-slate-500 font-mono mt-1">{new Date(n.createdAt).toLocaleString()}</span>
-                  </div>
-                ))
-              )}
-            </div>
-
-            <div className="mt-6 pt-4 border-t border-slate-800 flex justify-end gap-2">
-              {notifications.filter(n => n.userId === currentUser?.id && !n.isRead).length > 0 && (
-                <button
-                  onClick={() => {
-                    markNotificationsAsRead(currentUser?.id || '');
-                  }}
-                  className="rounded-lg border border-slate-700 bg-slate-800 px-4 py-2 text-xs font-semibold text-slate-300 hover:bg-slate-700 hover:text-white transition-all"
-                >
-                  Mark all as read
-                </button>
-              )}
-              <button
-                onClick={() => setShowNotificationsModal(false)}
-                className="rounded-lg bg-indigo-600 px-4 py-2 text-xs font-semibold text-white hover:bg-indigo-500 transition-all"
-              >
-                Close
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 };

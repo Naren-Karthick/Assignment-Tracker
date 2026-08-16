@@ -279,24 +279,12 @@ const getSeedData = () => {
     { id: 'l1', user: 'System', action: 'Database Seeded successfully.', timestamp: new Date().toISOString() }
   ];
 
-  const seedNotifications = [
-    {
-      id: 'notif_seed1',
-      userId: '212625205029',
-      title: 'Welcome to SMIT Portal',
-      message: 'You have been successfully registered to the IT Department Coursework Tracker.',
-      isRead: false,
-      createdAt: new Date().toISOString()
-    }
-  ];
-
   return {
     users: seedUsers,
     subjects: seedSubjects,
     assignments: seedAssignments,
     submissions: seedSubmissions,
-    auditLogs: seedLogs,
-    notifications: seedNotifications
+    auditLogs: seedLogs
   };
 };
 

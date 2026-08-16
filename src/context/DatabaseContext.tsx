@@ -1,7 +1,7 @@
 "use client";
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { playNotificationChime, showSystemNotification } from '@/utils/audio';
+
 
 // Roster Data
 export const SEED_ROSTERS = {
@@ -194,15 +194,6 @@ export interface AuditLog {
   timestamp: string;
 }
 
-export interface Notification {
-  id: string;
-  userId: string;
-  title: string;
-  message: string;
-  isRead: boolean;
-  createdAt: string;
-}
-
 interface DatabaseContextType {
   currentUser: User | null;
   users: User[];
@@ -213,8 +204,6 @@ interface DatabaseContextType {
   login: (id: string, password: string) => boolean;
   logout: () => void;
   resetDatabase: () => void;
-  notifications: Notification[];
-  markNotificationsAsRead: (userId: string) => void;
   // Admin Methods
   changePassword: (userId: string, newPassword: string) => void;
   addHOD: (name: string, email: string, password: string) => void;
@@ -245,7 +234,6 @@ export const DatabaseProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   const [assignments, setAssignments] = useState<Assignment[]>([]);
   const [submissions, setSubmissions] = useState<Submission[]>([]);
   const [auditLogs, setAuditLogs] = useState<AuditLog[]>([]);
-  const [notifications, setNotifications] = useState<Notification[]>([]);
   const [isInitialized, setIsInitialized] = useState(false);
 
   // Initialize DB from Server API
@@ -294,7 +282,6 @@ export const DatabaseProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         setAssignments(db.assignments);
         setSubmissions(db.submissions);
         setAuditLogs(db.auditLogs);
-        setNotifications(db.notifications || []);
 
         // Session remains local to the device browser
         const storedSession = localStorage.getItem('smit_session');
@@ -326,8 +313,7 @@ export const DatabaseProvider: React.FC<{ children: React.ReactNode }> = ({ chil
               subjects,
               assignments,
               submissions,
-              auditLogs,
-              notifications
+              auditLogs
             })
           });
         } catch (err) {
@@ -336,7 +322,7 @@ export const DatabaseProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       };
       saveDatabase();
     }
-  }, [users, subjects, assignments, submissions, auditLogs, notifications, isInitialized]);
+  }, [users, subjects, assignments, submissions, auditLogs, isInitialized]);
 
   // Poll database from Server API every 5 seconds to sync multiple devices in real-time
   useEffect(() => {
@@ -355,8 +341,7 @@ export const DatabaseProvider: React.FC<{ children: React.ReactNode }> = ({ chil
           subjects,
           assignments,
           submissions,
-          auditLogs,
-          notifications
+          auditLogs
         });
 
         const serverStateStr = JSON.stringify({
@@ -364,28 +349,15 @@ export const DatabaseProvider: React.FC<{ children: React.ReactNode }> = ({ chil
           subjects: db.subjects || [],
           assignments: db.assignments || [],
           submissions: db.submissions || [],
-          auditLogs: db.auditLogs || [],
-          notifications: db.notifications || []
+          auditLogs: db.auditLogs || []
         });
 
         if (localStateStr !== serverStateStr) {
-          // Check for brand new unread notifications for currently logged in student
-          const localUnreadIds = new Set(notifications.filter(n => n.userId === currentUser?.id && !n.isRead).map(n => n.id));
-          const serverUnread = (db.notifications || []).filter((n: any) => n.userId === currentUser?.id && !n.isRead);
-          const brandNewUnread = serverUnread.filter((n: any) => !localUnreadIds.has(n.id));
-
-          if (brandNewUnread.length > 0 && currentUser?.role === 'student') {
-            playNotificationChime();
-            const latest = brandNewUnread[0];
-            showSystemNotification(latest.title, latest.message);
-          }
-
           setUsers(db.users || []);
           setSubjects(db.subjects || []);
           setAssignments(db.assignments || []);
           setSubmissions(db.submissions || []);
           setAuditLogs(db.auditLogs || []);
-          setNotifications(db.notifications || []);
         }
       } catch (err) {
         console.error("Failed to sync database in background:", err);
@@ -393,7 +365,7 @@ export const DatabaseProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     }, 5000);
 
     return () => clearInterval(interval);
-  }, [users, subjects, assignments, submissions, auditLogs, notifications, isInitialized]);
+  }, [users, subjects, assignments, submissions, auditLogs, isInitialized]);
 
   const runSeeding = () => {
     const seedUsers: User[] = [];
@@ -835,17 +807,6 @@ export const DatabaseProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     }));
     setSubmissions(prev => [...prev, ...newSubs]);
 
-    // Create notifications for all target students
-    const newNotifs = targetStudents.map((student, idx) => ({
-      id: 'notif_' + (Date.now() + idx),
-      userId: student.id,
-      title: `New ${type}: ${title}`,
-      message: `A new ${type.toLowerCase()} has been posted for ${sub?.name || subjectCode}. Due date is ${dueDate}.`,
-      isRead: false,
-      createdAt: new Date().toISOString()
-    }));
-    setNotifications(prev => [...newNotifs, ...prev]);
-
     const newLog: AuditLog = {
       id: 'log_' + Date.now(),
       user: currentUser?.name || 'Faculty',
@@ -853,10 +814,6 @@ export const DatabaseProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       timestamp: new Date().toISOString()
     };
     setAuditLogs(prev => [newLog, ...prev]);
-  };
-
-  const markNotificationsAsRead = (userId: string) => {
-    setNotifications(prev => prev.map(n => n.userId === userId ? { ...n, isRead: true } : n));
   };
 
   const deleteAssignment = (assignmentId: string) => {
@@ -925,9 +882,7 @@ export const DatabaseProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       deleteSubject,
       createAssignment,
       deleteAssignment,
-      evaluateSubmission,
-      notifications,
-      markNotificationsAsRead
+      evaluateSubmission
     }}>
       {children}
     </DatabaseContext.Provider>

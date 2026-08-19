@@ -10,7 +10,7 @@ import {
 export const FacultyDashboard: React.FC<{ isEmbedded?: boolean }> = ({ isEmbedded = false }) => {
   const { 
     currentUser, subjects, assignments, submissions, users,
-    createAssignment, deleteAssignment, evaluateSubmission 
+    createAssignment, updateAssignmentTotalMark, deleteAssignment, evaluateSubmission 
   } = useDatabase();
 
   const [activeTab, setActiveTab] = useState<'assignments' | 'evaluate' | 'roster'>('assignments');
@@ -29,6 +29,8 @@ export const FacultyDashboard: React.FC<{ isEmbedded?: boolean }> = ({ isEmbedde
   const [evalStatus, setEvalStatus] = useState<'Completed' | 'Pending' | 'Late' | 'Missing'>('Completed');
   const [evalScore, setEvalScore] = useState<string>('');
   const [evalFeedback, setEvalFeedback] = useState<string>('');
+  const [editingTotalMarkId, setEditingTotalMarkId] = useState<string | null>(null);
+  const [tempTotalMark, setTempTotalMark] = useState('100');
 
   // Filter lists based on logged in faculty
   const mySubjects = subjects.filter(s => s.allocatedStaffId === currentUser?.id);
@@ -367,7 +369,42 @@ export const FacultyDashboard: React.FC<{ isEmbedded?: boolean }> = ({ isEmbedde
                   <div className="space-y-4">
                     <div className="border-b border-slate-800 pb-3">
                       <h3 className="text-lg font-bold text-white">{currentAssign?.title}</h3>
-                      <p className="text-xs text-slate-500 font-mono mt-0.5">{currentAssign?.subjectName} ({currentAssign?.subjectCode})</p>
+                      <div className="flex flex-wrap items-center justify-between gap-2 mt-0.5">
+                        <p className="text-xs text-slate-500 font-mono">{currentAssign?.subjectName} ({currentAssign?.subjectCode})</p>
+                        <div className="flex items-center gap-1.5 text-xs text-slate-400">
+                          <span>Total Marks:</span>
+                          {editingTotalMarkId === currentAssign?.id ? (
+                            <input
+                              type="number"
+                              value={tempTotalMark}
+                              onChange={(e) => setTempTotalMark(e.target.value)}
+                              onBlur={() => {
+                                const val = parseInt(tempTotalMark);
+                                if (!isNaN(val) && val > 0 && currentAssign) {
+                                  updateAssignmentTotalMark(currentAssign.id, val);
+                                }
+                                setEditingTotalMarkId(null);
+                              }}
+                              className="rounded border border-slate-700 bg-slate-950 px-1.5 py-0.5 w-16 text-xs text-white focus:outline-none focus:border-indigo-500"
+                              autoFocus
+                              min={1}
+                            />
+                          ) : (
+                            <div className="flex items-center gap-1">
+                              <span className="font-bold text-slate-200">{currentAssign?.totalMark || 100}</span>
+                              <button
+                                onClick={() => {
+                                  setTempTotalMark(String(currentAssign?.totalMark || 100));
+                                  setEditingTotalMarkId(currentAssign?.id || null);
+                                }}
+                                className="text-[10px] text-indigo-400 hover:text-indigo-350 font-semibold ml-1"
+                              >
+                                (Edit)
+                              </button>
+                            </div>
+                          )}
+                        </div>
+                      </div>
                     </div>
 
                     <div className="overflow-hidden rounded-xl border border-slate-800 bg-slate-900/20">
@@ -421,11 +458,11 @@ export const FacultyDashboard: React.FC<{ isEmbedded?: boolean }> = ({ isEmbedde
                                     <div className="space-y-1.5">
                                       <input
                                         type="number"
-                                        placeholder="Marks (0-100)"
+                                        placeholder={`Marks (0-${currentAssign?.totalMark || 100})`}
                                         value={evalScore}
                                         onChange={(e) => setEvalScore(e.target.value)}
                                         className="rounded border border-slate-700 bg-slate-950 p-1.5 w-24 focus:outline-none"
-                                        max={100}
+                                        max={currentAssign?.totalMark || 100}
                                         min={0}
                                       />
                                       <input
@@ -439,7 +476,7 @@ export const FacultyDashboard: React.FC<{ isEmbedded?: boolean }> = ({ isEmbedde
                                   ) : (
                                     <div>
                                       {sub?.score !== undefined ? (
-                                        <p className="font-semibold text-white">Score: {sub.score} / 100</p>
+                                        <p className="font-semibold text-white">Score: {sub.score} / {currentAssign?.totalMark || 100}</p>
                                       ) : (
                                         <p className="text-slate-500">Ungraded</p>
                                       )}

@@ -176,6 +176,7 @@ export interface Assignment {
   facultyId: string;
   createdAt: string;
   type: 'Assignment' | 'Test' | 'Homework';
+  totalMark?: number;
 }
 
 export interface Submission {
@@ -222,6 +223,7 @@ interface DatabaseContextType {
   deleteSubject: (code: string) => void;
   // Faculty Methods
   createAssignment: (title: string, description: string, dueDate: string, subjectCode: string, year: '2nd_year' | '3rd_year' | '4th_year', type: 'Assignment' | 'Test' | 'Homework') => void;
+  updateAssignmentTotalMark: (assignmentId: string, totalMark: number) => void;
   deleteAssignment: (assignmentId: string) => void;
   evaluateSubmission: (assignmentId: string, studentRegisterNo: string, status: 'Completed' | 'Pending' | 'Late' | 'Missing', score?: number, feedback?: string) => void;
 }
@@ -854,7 +856,8 @@ export const DatabaseProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       year,
       facultyId: currentUser?.id || 'unknown',
       createdAt: new Date().toISOString(),
-      type
+      type,
+      totalMark: 100 // Default to 100
     };
 
     setAssignments(prev => [...prev, newAssignment]);
@@ -872,6 +875,18 @@ export const DatabaseProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       id: 'log_' + Date.now(),
       user: currentUser?.name || 'Faculty',
       action: `Posted ${type.toLowerCase()} "${title}" for ${year.replace('_', ' ')} (${sub?.name || subjectCode}).`,
+      timestamp: new Date().toISOString()
+    };
+    setAuditLogs(prev => [newLog, ...prev]);
+  };
+
+  const updateAssignmentTotalMark = (assignmentId: string, totalMark: number) => {
+    setAssignments(prev => prev.map(a => a.id === assignmentId ? { ...a, totalMark } : a));
+    const assign = assignments.find(a => a.id === assignmentId);
+    const newLog: AuditLog = {
+      id: 'log_' + Date.now(),
+      user: currentUser?.name || 'Faculty',
+      action: `Updated total mark for "${assign?.title || assignmentId}" to ${totalMark}.`,
       timestamp: new Date().toISOString()
     };
     setAuditLogs(prev => [newLog, ...prev]);
@@ -943,6 +958,7 @@ export const DatabaseProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       updateSubjectStaff,
       deleteSubject,
       createAssignment,
+      updateAssignmentTotalMark,
       deleteAssignment,
       evaluateSubmission
     }}>

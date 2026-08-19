@@ -148,7 +148,7 @@ export const StudentDashboard: React.FC = () => {
                         <div className="flex justify-between items-center text-xs font-bold text-slate-300">
                           <span>Faculty Evaluation:</span>
                           {sub.score !== undefined && (
-                            <span className="text-indigo-400">Score: {sub.score} / 100</span>
+                            <span className="text-indigo-400">Score: {sub.score} / {a.totalMark || 100}</span>
                           )}
                         </div>
                         {sub.feedback && (

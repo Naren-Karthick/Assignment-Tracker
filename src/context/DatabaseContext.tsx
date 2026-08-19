@@ -226,6 +226,7 @@ interface DatabaseContextType {
   updateAssignmentTotalMark: (assignmentId: string, totalMark: number) => void;
   deleteAssignment: (assignmentId: string) => void;
   evaluateSubmission: (assignmentId: string, studentRegisterNo: string, status: 'Completed' | 'Pending' | 'Late' | 'Missing', score?: number, feedback?: string) => void;
+  updateMyPassword: (oldPass: string, newPass: string) => { success: boolean; message: string };
 }
 
 const DatabaseContext = createContext<DatabaseContextType | undefined>(undefined);
@@ -932,6 +933,33 @@ export const DatabaseProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     setAuditLogs(prev => [newLog, ...prev]);
   };
 
+  const updateMyPassword = (oldPass: string, newPass: string): { success: boolean; message: string } => {
+    if (!currentUser) return { success: false, message: "No user logged in." };
+
+    const userRecord = users.find(u => u.id === currentUser.id);
+    if (!userRecord) return { success: false, message: "User account not found." };
+
+    if (userRecord.passwordHash !== oldPass) {
+      return { success: false, message: "Incorrect current password." };
+    }
+
+    setUsers(prev => prev.map(u => u.id === currentUser.id ? { ...u, passwordHash: newPass } : u));
+    
+    const updatedUser = { ...userRecord, passwordHash: newPass };
+    setCurrentUser(updatedUser);
+    localStorage.setItem('smit_session', JSON.stringify(updatedUser));
+
+    const newLog: AuditLog = {
+      id: 'log_' + Date.now(),
+      user: currentUser.name,
+      action: "Updated their own account password.",
+      timestamp: new Date().toISOString()
+    };
+    setAuditLogs(prev => [newLog, ...prev]);
+
+    return { success: true, message: "Password updated successfully!" };
+  };
+
   return (
     <DatabaseContext.Provider value={{
       currentUser,
@@ -960,7 +988,8 @@ export const DatabaseProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       createAssignment,
       updateAssignmentTotalMark,
       deleteAssignment,
-      evaluateSubmission
+      evaluateSubmission,
+      updateMyPassword
     }}>
       {children}
     </DatabaseContext.Provider>

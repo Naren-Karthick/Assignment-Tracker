@@ -736,6 +736,40 @@ export const AdminDashboard: React.FC = () => {
               <span>Override Password Now</span>
             </button>
           </form>
+
+          {/* User Passwords Directory */}
+          <div className="mt-8 pt-6 border-t border-slate-800">
+            <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">User Passwords Directory</h4>
+            <div className="overflow-hidden rounded-lg border border-slate-800 bg-slate-950/20 text-xs">
+              <div className="overflow-y-auto max-h-72">
+                <table className="w-full text-left border-collapse">
+                  <thead>
+                    <tr className="border-b border-slate-850 bg-slate-950/80 text-[10px] font-semibold uppercase tracking-wider text-slate-400">
+                      <th className="px-4 py-2.5">Name / ID</th>
+                      <th className="px-4 py-2.5">Role</th>
+                      <th className="px-4 py-2.5 text-right">Current Password</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-850/50 text-slate-350">
+                    {users.map(u => (
+                      <tr key={u.id} className="hover:bg-slate-900/10 transition-colors">
+                        <td className="px-4 py-2">
+                          <p className="font-semibold text-slate-200">{u.name}</p>
+                          <p className="font-mono text-[9px] text-slate-500">{u.id}</p>
+                        </td>
+                        <td className="px-4 py-2">
+                          <span className="uppercase text-[9px] font-semibold text-slate-400">{u.role}</span>
+                        </td>
+                        <td className="px-4 py-2 text-right font-mono text-indigo-400 font-bold select-all">
+                          {u.passwordHash}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
         </div>
       )}
 

@@ -34,6 +34,7 @@ export const AdminDashboard: React.FC = () => {
   const [selectedUserForReset, setSelectedUserForReset] = useState<string>('');
   const [newPasswordVal, setNewPasswordVal] = useState('');
   const [overrideSearchQuery, setOverrideSearchQuery] = useState('');
+  const [isOpenOverrideDropdown, setIsOpenOverrideDropdown] = useState(false);
   const [message, setMessage] = useState<{ text: string; type: 'success' | 'error' } | null>(null);
 
   // Metrics
@@ -138,6 +139,7 @@ export const AdminDashboard: React.FC = () => {
     setMessage({ text: `Password successfully updated for ${selectedUserForReset}.`, type: 'success' });
     setNewPasswordVal('');
     setSelectedUserForReset('');
+    setOverrideSearchQuery('');
     setTimeout(() => setMessage(null), 3000);
   };
 
@@ -707,32 +709,78 @@ export const AdminDashboard: React.FC = () => {
           </div>
 
           <form onSubmit={handlePasswordResetSubmit} className="space-y-4">
-            <div>
-              <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Search User (Name or ID)</label>
-              <div className="relative mb-3">
+            <div className="relative z-30">
+              <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Target User</label>
+              
+              {/* Custom Searchable dropdown container */}
+              <div className="relative">
                 <input
                   type="text"
-                  placeholder="Type name or register number to filter user list..."
+                  placeholder="Search and select user by name or register number..."
                   value={overrideSearchQuery}
-                  onChange={(e) => setOverrideSearchQuery(e.target.value)}
-                  className="w-full rounded-lg border border-slate-700 bg-slate-950 p-2.5 pl-9 text-xs text-white placeholder-slate-650 focus:border-indigo-500 focus:outline-none"
+                  onChange={(e) => {
+                    setOverrideSearchQuery(e.target.value);
+                    setIsOpenOverrideDropdown(true);
+                  }}
+                  onFocus={() => {
+                    setIsOpenOverrideDropdown(true);
+                  }}
+                  className="w-full rounded-lg border border-slate-700 bg-slate-950 p-3 pl-9 pr-10 text-sm text-slate-100 placeholder-slate-600 focus:border-indigo-500 focus:outline-none cursor-text"
                 />
-                <Search className="absolute left-3 top-3 h-3.5 w-3.5 text-slate-500" />
+                <Search className="absolute left-3 top-4 h-4 w-4 text-slate-500" />
+                
+                {/* Reset or dropdown indicator */}
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsOpenOverrideDropdown(!isOpenOverrideDropdown);
+                    if (!isOpenOverrideDropdown) setOverrideSearchQuery('');
+                  }}
+                  className="absolute right-3 top-3.5 text-slate-500 hover:text-slate-350"
+                >
+                  <Filter className="h-4 w-4" />
+                </button>
               </div>
 
-              <label className="block text-[10px] font-semibold text-slate-500 uppercase tracking-wider mb-1">Select Target User</label>
-              <select
-                value={selectedUserForReset}
-                onChange={(e) => setSelectedUserForReset(e.target.value)}
-                className="w-full rounded-lg border border-slate-700 bg-slate-950 p-3 text-sm text-slate-300 focus:border-indigo-500 focus:outline-none"
-              >
-                <option value="">-- Choose User ({filteredOverrideUsers.length} matches) --</option>
-                {filteredOverrideUsers.map(u => (
-                  <option key={u.id} value={u.id}>
-                    [{u.role.toUpperCase()}] {u.name} ({u.id})
-                  </option>
-                ))}
-              </select>
+              {/* Click-outside Backdrop */}
+              {isOpenOverrideDropdown && (
+                <div 
+                  className="fixed inset-0 z-40 bg-transparent" 
+                  onClick={() => setIsOpenOverrideDropdown(false)} 
+                />
+              )}
+
+              {/* Floating Dropdown Options */}
+              {isOpenOverrideDropdown && (
+                <div className="absolute left-0 right-0 z-55 mt-1 max-h-60 overflow-y-auto rounded-lg border border-slate-800 bg-slate-950 shadow-2xl animate-in fade-in-50 slide-in-from-top-1 duration-150">
+                  {filteredOverrideUsers.length === 0 ? (
+                    <p className="p-3 text-xs text-slate-500 italic text-center">No users match search term.</p>
+                  ) : (
+                    filteredOverrideUsers.map(u => (
+                      <button
+                        key={u.id}
+                        type="button"
+                        onClick={() => {
+                          setSelectedUserForReset(u.id);
+                          setOverrideSearchQuery(`[${u.role.toUpperCase()}] ${u.name} (${u.id})`);
+                          setIsOpenOverrideDropdown(false);
+                        }}
+                        className={`w-full text-left px-4 py-2.5 text-xs hover:bg-indigo-650 hover:text-white transition-colors flex justify-between items-center ${
+                          selectedUserForReset === u.id ? 'bg-indigo-950/40 text-indigo-400 font-semibold' : 'text-slate-350'
+                        }`}
+                      >
+                        <div>
+                          <span className="font-semibold text-slate-200">{u.name}</span>
+                          <span className="text-[10px] text-slate-500 ml-2 font-mono">{u.id}</span>
+                        </div>
+                        <span className="text-[9px] uppercase tracking-wider text-slate-500 bg-slate-900 border border-slate-850 px-1 rounded">
+                          {u.role}
+                        </span>
+                      </button>
+                    ))
+                  )}
+                </div>
+              )}
             </div>
 
             <div>

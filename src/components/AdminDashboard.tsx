@@ -33,6 +33,7 @@ export const AdminDashboard: React.FC = () => {
   // Universal Password Reset states
   const [selectedUserForReset, setSelectedUserForReset] = useState<string>('');
   const [newPasswordVal, setNewPasswordVal] = useState('');
+  const [overrideSearchQuery, setOverrideSearchQuery] = useState('');
   const [message, setMessage] = useState<{ text: string; type: 'success' | 'error' } | null>(null);
 
   // Metrics
@@ -52,6 +53,11 @@ export const AdminDashboard: React.FC = () => {
     const matchesYear = yearFilter === 'all' || u.targetYear === yearFilter;
     return matchesSearch && matchesRole && matchesYear;
   });
+
+  const filteredOverrideUsers = users.filter(u => 
+    u.name.toLowerCase().includes(overrideSearchQuery.toLowerCase()) ||
+    u.id.toLowerCase().includes(overrideSearchQuery.toLowerCase())
+  );
 
   const handleCreateUser = (e: React.FormEvent) => {
     e.preventDefault();
@@ -702,14 +708,26 @@ export const AdminDashboard: React.FC = () => {
 
           <form onSubmit={handlePasswordResetSubmit} className="space-y-4">
             <div>
-              <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Target User</label>
+              <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Search User (Name or ID)</label>
+              <div className="relative mb-3">
+                <input
+                  type="text"
+                  placeholder="Type name or register number to filter user list..."
+                  value={overrideSearchQuery}
+                  onChange={(e) => setOverrideSearchQuery(e.target.value)}
+                  className="w-full rounded-lg border border-slate-700 bg-slate-950 p-2.5 pl-9 text-xs text-white placeholder-slate-650 focus:border-indigo-500 focus:outline-none"
+                />
+                <Search className="absolute left-3 top-3 h-3.5 w-3.5 text-slate-500" />
+              </div>
+
+              <label className="block text-[10px] font-semibold text-slate-500 uppercase tracking-wider mb-1">Select Target User</label>
               <select
                 value={selectedUserForReset}
                 onChange={(e) => setSelectedUserForReset(e.target.value)}
                 className="w-full rounded-lg border border-slate-700 bg-slate-950 p-3 text-sm text-slate-300 focus:border-indigo-500 focus:outline-none"
               >
-                <option value="">-- Choose User --</option>
-                {users.map(u => (
+                <option value="">-- Choose User ({filteredOverrideUsers.length} matches) --</option>
+                {filteredOverrideUsers.map(u => (
                   <option key={u.id} value={u.id}>
                     [{u.role.toUpperCase()}] {u.name} ({u.id})
                   </option>

@@ -177,6 +177,12 @@ export interface Assignment {
   createdAt: string;
   type: 'Assignment' | 'Test' | 'Homework';
   totalMark?: number;
+  testQuestions?: string;
+  testTopics?: string;
+  homeworkQuestions?: string;
+  pageNo?: string;
+  homeworkType?: 'questions' | 'pageno' | 'own';
+  ownQuestionText?: string;
 }
 
 export interface Submission {
@@ -222,7 +228,22 @@ interface DatabaseContextType {
   updateSubjectStaff: (code: string, allocatedStaffId: string) => void;
   deleteSubject: (code: string) => void;
   // Faculty Methods
-  createAssignment: (title: string, description: string, dueDate: string, subjectCode: string, year: '2nd_year' | '3rd_year' | '4th_year', type: 'Assignment' | 'Test' | 'Homework') => void;
+  createAssignment: (
+    title: string, 
+    description: string, 
+    dueDate: string, 
+    subjectCode: string, 
+    year: '2nd_year' | '3rd_year' | '4th_year', 
+    type: 'Assignment' | 'Test' | 'Homework',
+    extraFields?: {
+      testQuestions?: string;
+      testTopics?: string;
+      homeworkQuestions?: string;
+      pageNo?: string;
+      homeworkType?: 'questions' | 'pageno' | 'own';
+      ownQuestionText?: string;
+    }
+  ) => void;
   updateAssignmentTotalMark: (assignmentId: string, totalMark: number) => void;
   deleteAssignment: (assignmentId: string) => void;
   evaluateSubmission: (assignmentId: string, studentRegisterNo: string, status: 'Completed' | 'Pending' | 'Late' | 'Missing', score?: number, feedback?: string) => void;
@@ -844,7 +865,22 @@ export const DatabaseProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   };
 
   // Faculty Methods
-  const createAssignment = (title: string, description: string, dueDate: string, subjectCode: string, year: '2nd_year' | '3rd_year' | '4th_year', type: 'Assignment' | 'Test' | 'Homework') => {
+  const createAssignment = (
+    title: string, 
+    description: string, 
+    dueDate: string, 
+    subjectCode: string, 
+    year: '2nd_year' | '3rd_year' | '4th_year', 
+    type: 'Assignment' | 'Test' | 'Homework',
+    extraFields?: {
+      testQuestions?: string;
+      testTopics?: string;
+      homeworkQuestions?: string;
+      pageNo?: string;
+      homeworkType?: 'questions' | 'pageno' | 'own';
+      ownQuestionText?: string;
+    }
+  ) => {
     const id = 'assign_' + Date.now();
     const sub = subjects.find(s => s.code === subjectCode);
     const newAssignment: Assignment = {
@@ -858,7 +894,8 @@ export const DatabaseProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       facultyId: currentUser?.id || 'unknown',
       createdAt: new Date().toISOString(),
       type,
-      totalMark: 100 // Default to 100
+      totalMark: 100, // Default to 100
+      ...extraFields
     };
 
     setAssignments(prev => [...prev, newAssignment]);

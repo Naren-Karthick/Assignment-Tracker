@@ -22,6 +22,14 @@ export const FacultyDashboard: React.FC<{ isEmbedded?: boolean }> = ({ isEmbedde
   const [assignDueDate, setAssignDueDate] = useState('');
   const [assignSubCode, setAssignSubCode] = useState('');
   const [assignType, setAssignType] = useState<'Assignment' | 'Test' | 'Homework'>('Assignment');
+  
+  // Custom conditional fields states
+  const [testQuestions, setTestQuestions] = useState('');
+  const [testTopics, setTestTopics] = useState('');
+  const [homeworkQuestions, setHomeworkQuestions] = useState('');
+  const [pageNo, setPageNo] = useState('');
+  const [homeworkType, setHomeworkType] = useState<'questions' | 'pageno' | 'own'>('questions');
+  const [ownQuestionText, setOwnQuestionText] = useState('');
 
   // Evaluation states
   const [selectedAssignmentForEval, setSelectedAssignmentForEval] = useState<string>('');
@@ -38,8 +46,8 @@ export const FacultyDashboard: React.FC<{ isEmbedded?: boolean }> = ({ isEmbedde
 
   const handlePostAssignment = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!assignTitle || !assignDesc || !assignDueDate || !assignSubCode) {
-      alert("Please fill all fields");
+    if (!assignTitle || !assignDueDate || !assignSubCode) {
+      alert("Please fill in required fields");
       return;
     }
 
@@ -52,7 +60,15 @@ export const FacultyDashboard: React.FC<{ isEmbedded?: boolean }> = ({ isEmbedde
       assignDueDate,
       assignSubCode,
       selectedSubject.year,
-      assignType
+      assignType,
+      {
+        testQuestions: assignType === 'Test' ? testQuestions : undefined,
+        testTopics: assignType === 'Test' ? testTopics : undefined,
+        homeworkQuestions: assignType === 'Homework' && homeworkType === 'questions' ? homeworkQuestions : undefined,
+        pageNo: assignType === 'Homework' && homeworkType === 'pageno' ? pageNo : undefined,
+        homeworkType: assignType === 'Homework' ? homeworkType : undefined,
+        ownQuestionText: assignType === 'Homework' && homeworkType === 'own' ? ownQuestionText : undefined
+      }
     );
 
     // Reset Form
@@ -61,6 +77,12 @@ export const FacultyDashboard: React.FC<{ isEmbedded?: boolean }> = ({ isEmbedde
     setAssignDueDate('');
     setAssignSubCode('');
     setAssignType('Assignment');
+    setTestQuestions('');
+    setTestTopics('');
+    setHomeworkQuestions('');
+    setPageNo('');
+    setHomeworkType('questions');
+    setOwnQuestionText('');
     setShowAddAssignmentModal(false);
   };
 
@@ -199,16 +221,114 @@ export const FacultyDashboard: React.FC<{ isEmbedded?: boolean }> = ({ isEmbedde
                   placeholder="e.g. Unit 1 Trees and Graphs Assignment"
                   className="w-full rounded-lg border border-slate-700 bg-slate-950 p-2.5 text-sm text-slate-100 placeholder-slate-600 focus:border-indigo-500 focus:outline-none"
                 />
+              </div>              <div>
+                <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">Task Type</label>
+                <select
+                  value={assignType}
+                  onChange={(e: any) => setAssignType(e.target.value)}
+                  className="w-full rounded-lg border border-slate-700 bg-slate-950 p-2.5 text-sm text-slate-350 focus:border-indigo-500 focus:outline-none"
+                >
+                  <option value="Assignment">Assignment</option>
+                  <option value="Test">Test</option>
+                  <option value="Homework">Homework</option>
+                </select>
               </div>
 
+              {assignType === 'Test' && (
+                <div className="space-y-4 border-l-2 border-indigo-500 pl-3">
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">Test Topics</label>
+                    <input
+                      type="text"
+                      required
+                      value={testTopics}
+                      onChange={(e) => setTestTopics(e.target.value)}
+                      placeholder="e.g. Binary Search Trees, Heap Sorting algorithms"
+                      className="w-full rounded-lg border border-slate-700 bg-slate-950 p-2.5 text-sm text-slate-100 placeholder-slate-650 focus:border-indigo-500 focus:outline-none"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">Test Questions (Optional)</label>
+                    <textarea
+                      rows={3}
+                      value={testQuestions}
+                      onChange={(e) => setTestQuestions(e.target.value)}
+                      placeholder="Write test questions here..."
+                      className="w-full rounded-lg border border-slate-700 bg-slate-950 p-2.5 text-sm text-slate-100 placeholder-slate-650 focus:border-indigo-500 focus:outline-none"
+                    ></textarea>
+                  </div>
+                </div>
+              )}
+
+              {assignType === 'Homework' && (
+                <div className="space-y-4 border-l-2 border-indigo-500 pl-3">
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">Homework Delivery Method</label>
+                    <select
+                      value={homeworkType}
+                      onChange={(e: any) => setHomeworkType(e.target.value)}
+                      className="w-full rounded-lg border border-slate-700 bg-slate-950 p-2.5 text-sm text-slate-300 focus:border-indigo-500 focus:outline-none"
+                    >
+                      <option value="questions">Homework Questions</option>
+                      <option value="pageno">Page Number</option>
+                      <option value="own">Own Question</option>
+                    </select>
+                  </div>
+
+                  {homeworkType === 'questions' && (
+                    <div>
+                      <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">Homework Questions</label>
+                      <textarea
+                        required
+                        rows={3}
+                        value={homeworkQuestions}
+                        onChange={(e) => setHomeworkQuestions(e.target.value)}
+                        placeholder="e.g. Solve exercises 1 to 5 from chapter 3."
+                        className="w-full rounded-lg border border-slate-700 bg-slate-950 p-2.5 text-sm text-slate-100 placeholder-slate-650 focus:border-indigo-500 focus:outline-none"
+                      ></textarea>
+                    </div>
+                  )}
+
+                  {homeworkType === 'pageno' && (
+                    <div>
+                      <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">Page Number(s)</label>
+                      <input
+                        type="text"
+                        required
+                        value={pageNo}
+                        onChange={(e) => setPageNo(e.target.value)}
+                        placeholder="e.g. Page 145-147"
+                        className="w-full rounded-lg border border-slate-700 bg-slate-950 p-2.5 text-sm text-slate-100 placeholder-slate-650 focus:border-indigo-500 focus:outline-none"
+                      />
+                    </div>
+                  )}
+
+                  {homeworkType === 'own' && (
+                    <div>
+                      <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">Own Question Description</label>
+                      <textarea
+                        required
+                        rows={3}
+                        value={ownQuestionText}
+                        onChange={(e) => setOwnQuestionText(e.target.value)}
+                        placeholder="Write your custom homework question prompts here..."
+                        className="w-full rounded-lg border border-slate-700 bg-slate-950 p-2.5 text-sm text-slate-100 placeholder-slate-650 focus:border-indigo-500 focus:outline-none"
+                      ></textarea>
+                    </div>
+                  )}
+                </div>
+              )}
+
               <div>
-                <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">Detailed Description / Instructions</label>
+                <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">
+                  {assignType === 'Assignment' ? 'Detailed Description / Instructions' : 'Additional Remarks (Optional)'}
+                </label>
                 <textarea
-                  required
-                  rows={4}
+                  required={assignType === 'Assignment'}
+                  rows={3}
                   value={assignDesc}
                   onChange={(e) => setAssignDesc(e.target.value)}
-                  placeholder="Write clear steps, reference book links, or laboratory constraints..."
+                  placeholder={assignType === 'Assignment' ? "Write clear steps or guidelines..." : "Add any extra instructions or hints here..."}
                   className="w-full rounded-lg border border-slate-700 bg-slate-950 p-2.5 text-sm text-slate-100 placeholder-slate-600 focus:border-indigo-500 focus:outline-none"
                 ></textarea>
               </div>
@@ -222,19 +342,6 @@ export const FacultyDashboard: React.FC<{ isEmbedded?: boolean }> = ({ isEmbedde
                   onChange={(e) => setAssignDueDate(e.target.value)}
                   className="w-full rounded-lg border border-slate-700 bg-slate-950 p-2.5 text-sm text-slate-300 focus:border-indigo-500 focus:outline-none"
                 />
-              </div>
-
-              <div>
-                <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">Task Type</label>
-                <select
-                  value={assignType}
-                  onChange={(e: any) => setAssignType(e.target.value)}
-                  className="w-full rounded-lg border border-slate-700 bg-slate-950 p-2.5 text-sm text-slate-300 focus:border-indigo-500 focus:outline-none"
-                >
-                  <option value="Assignment">Assignment</option>
-                  <option value="Test">Test</option>
-                  <option value="Homework">Homework</option>
-                </select>
               </div>
 
               <div className="flex gap-3 justify-end pt-4 border-t border-slate-800">

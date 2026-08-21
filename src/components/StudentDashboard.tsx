@@ -142,6 +142,45 @@ export const StudentDashboard: React.FC = () => {
                     <h3 className="text-base font-bold text-white">{a.title}</h3>
                     <p className="text-xs text-slate-400 leading-relaxed max-w-3xl">{a.description}</p>
 
+                    {/* Conditional coursework details display */}
+                    {a.type === 'Test' && (
+                      <div className="mt-3 rounded-lg bg-pink-500/5 border border-pink-500/10 p-3 max-w-2xl text-xs space-y-2">
+                        <div>
+                          <span className="font-bold text-pink-400 uppercase tracking-wider text-[10px]">Test Topics:</span>
+                          <p className="text-slate-300 mt-0.5">{a.testTopics}</p>
+                        </div>
+                        {a.testQuestions && (
+                          <div>
+                            <span className="font-bold text-pink-400 uppercase tracking-wider text-[10px]">Test Questions:</span>
+                            <pre className="text-slate-400 mt-1 font-mono bg-slate-950/40 p-2 rounded whitespace-pre-wrap">{a.testQuestions}</pre>
+                          </div>
+                        )}
+                      </div>
+                    )}
+
+                    {a.type === 'Homework' && (
+                      <div className="mt-3 rounded-lg bg-amber-500/5 border border-amber-500/10 p-3 max-w-2xl text-xs space-y-2">
+                        {a.homeworkType === 'questions' && (
+                          <div>
+                            <span className="font-bold text-amber-400 uppercase tracking-wider text-[10px]">Homework Questions:</span>
+                            <pre className="text-slate-300 mt-1 font-mono bg-slate-950/40 p-2 rounded whitespace-pre-wrap">{a.homeworkQuestions}</pre>
+                          </div>
+                        )}
+                        {a.homeworkType === 'pageno' && (
+                          <div>
+                            <span className="font-bold text-amber-400 uppercase tracking-wider text-[10px]">Assigned Page Number(s):</span>
+                            <p className="text-slate-205 mt-0.5 font-bold font-mono text-sm">{a.pageNo}</p>
+                          </div>
+                        )}
+                        {a.homeworkType === 'own' && (
+                          <div>
+                            <span className="font-bold text-amber-400 uppercase tracking-wider text-[10px]">Homework Question Description:</span>
+                            <pre className="text-slate-350 mt-1 font-mono bg-slate-950/40 p-2 rounded whitespace-pre-wrap">{a.ownQuestionText}</pre>
+                          </div>
+                        )}
+                      </div>
+                    )}
+
                     {/* Feedback and Marks */}
                     {sub && (sub.score !== undefined || sub.feedback) && (
                       <div className="mt-3 rounded-lg bg-indigo-500/5 border border-indigo-500/10 p-3 max-w-2xl">

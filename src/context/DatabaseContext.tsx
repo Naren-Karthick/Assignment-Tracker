@@ -261,6 +261,49 @@ export const DatabaseProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   const [auditLogs, setAuditLogs] = useState<AuditLog[]>([]);
   const [isInitialized, setIsInitialized] = useState(false);
 
+  // Disable Right-Click and DevTools keyboard shortcuts globally
+  useEffect(() => {
+    const handleContextMenu = (e: MouseEvent) => {
+      e.preventDefault();
+    };
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // F12
+      if (e.key === 'F12' || e.keyCode === 123) {
+        e.preventDefault();
+        return false;
+      }
+      // Ctrl+Shift+I / J / C (Windows/Linux)
+      if (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'J' || e.key === 'C' || e.keyCode === 73 || e.keyCode === 74 || e.keyCode === 67)) {
+        e.preventDefault();
+        return false;
+      }
+      // Cmd+Opt+I / J / C (macOS)
+      if (e.metaKey && e.altKey && (e.key === 'i' || e.key === 'j' || e.key === 'c' || e.keyCode === 73 || e.keyCode === 74 || e.keyCode === 67)) {
+        e.preventDefault();
+        return false;
+      }
+      // Ctrl+U (View Source) or Cmd+Opt+U
+      if ((e.ctrlKey && (e.key === 'u' || e.key === 'U' || e.keyCode === 85)) || (e.metaKey && e.altKey && (e.key === 'u' || e.key === 'U' || e.keyCode === 85))) {
+        e.preventDefault();
+        return false;
+      }
+      // Ctrl+S (Save) or Cmd+S
+      if ((e.ctrlKey && (e.key === 's' || e.key === 'S' || e.keyCode === 83)) || (e.metaKey && (e.key === 's' || e.key === 'S' || e.keyCode === 83))) {
+        e.preventDefault();
+        return false;
+      }
+    };
+
+    document.addEventListener('contextmenu', handleContextMenu);
+    document.addEventListener('keydown', handleKeyDown);
+
+    return () => {
+      document.removeEventListener('contextmenu', handleContextMenu);
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, []);
+
   // Initialize DB from Server API
   useEffect(() => {
     const loadDatabase = async () => {

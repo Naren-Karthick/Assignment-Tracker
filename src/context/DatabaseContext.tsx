@@ -294,6 +294,18 @@ export const DatabaseProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       logViolation('Right-Click Context Menu');
     };
 
+    // Viewport size difference check (Detects DevTools opened via Browser Settings Menu)
+    const checkViewportSizes = () => {
+      const threshold = 160;
+      const widthDiff = window.outerWidth - window.innerWidth;
+      const heightDiff = window.outerHeight - window.innerHeight;
+
+      // If the difference between the outer window size and the viewport is too large, DevTools is open/docked
+      if (widthDiff > threshold || heightDiff > threshold) {
+        logViolation('Developer Tools Panel (Browser Settings Menu)');
+      }
+    };
+
     const handleKeyDown = (e: KeyboardEvent) => {
       // F12
       if (e.key === 'F12' || e.keyCode === 123) {
@@ -319,6 +331,12 @@ export const DatabaseProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         logViolation('View Source (Ctrl+U)');
         return false;
       }
+      // Disable print command Ctrl+P or Cmd+P
+      if ((e.ctrlKey && (e.key === 'p' || e.key === 'P' || e.keyCode === 80)) || (e.metaKey && (e.key === 'p' || e.key === 'P' || e.keyCode === 80))) {
+        e.preventDefault();
+        logViolation('Print Page command (Ctrl+P)');
+        return false;
+      }
       // Ctrl+S (Save) or Cmd+S
       if ((e.ctrlKey && (e.key === 's' || e.key === 'S' || e.keyCode === 83)) || (e.metaKey && (e.key === 's' || e.key === 'S' || e.keyCode === 83))) {
         e.preventDefault();
@@ -329,10 +347,15 @@ export const DatabaseProvider: React.FC<{ children: React.ReactNode }> = ({ chil
 
     document.addEventListener('contextmenu', handleContextMenu);
     document.addEventListener('keydown', handleKeyDown);
+    window.addEventListener('resize', checkViewportSizes);
+
+    // Initial check
+    checkViewportSizes();
 
     return () => {
       document.removeEventListener('contextmenu', handleContextMenu);
       document.removeEventListener('keydown', handleKeyDown);
+      window.removeEventListener('resize', checkViewportSizes);
     };
   }, [userIp, currentUser]);
 

@@ -277,11 +277,24 @@ export const DatabaseProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     if (typeof window !== 'undefined') {
       const alreadyLogged = sessionStorage.getItem('smit_visit_logged');
       if (!alreadyLogged) {
+        // Detect Device Type
+        const getDeviceType = () => {
+          const ua = navigator.userAgent;
+          if (/tablet|ipad|playbook|silk|(android(?!.*mobi))/i.test(ua)) {
+            return 'Tablet';
+          }
+          if (/Mobile|Android|iP(hone|od)|IEMobile|BlackBerry|Kindle|Silk-Accelerated|(hpw|web)OS|Opera M(obi|ini)/i.test(ua)) {
+            return 'Mobile';
+          }
+          return 'Laptop/Desktop';
+        };
+
+        const device = getDeviceType();
         const visitor = currentUser ? `${currentUser.name} (${currentUser.id} - ${currentUser.role})` : 'Anonymous Guest';
         const newLog: AuditLog = {
           id: 'log_' + Date.now(),
           user: 'Visitor Guard',
-          action: `Visitor Alert: ${visitor} visited Sri Muthukumaran IT portal from IP: ${userIp}`,
+          action: `Visitor Alert: ${visitor} [${device}] visited Sri Muthukumaran IT portal from IP: ${userIp}`,
           timestamp: new Date().toISOString()
         };
         setAuditLogs(prev => [newLog, ...prev]);

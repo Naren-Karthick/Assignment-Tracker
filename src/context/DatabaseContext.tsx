@@ -270,6 +270,26 @@ export const DatabaseProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       .catch(() => setUserIp('Unknown IP'));
   }, []);
 
+  // Log site visitors to Audit Logs once per tab session
+  useEffect(() => {
+    if (!isInitialized || userIp === 'Detecting...') return;
+
+    if (typeof window !== 'undefined') {
+      const alreadyLogged = sessionStorage.getItem('smit_visit_logged');
+      if (!alreadyLogged) {
+        const visitor = currentUser ? `${currentUser.name} (${currentUser.id} - ${currentUser.role})` : 'Anonymous Guest';
+        const newLog: AuditLog = {
+          id: 'log_' + Date.now(),
+          user: 'Visitor Guard',
+          action: `Visitor Alert: ${visitor} visited Sri Muthukumaran IT portal from IP: ${userIp}`,
+          timestamp: new Date().toISOString()
+        };
+        setAuditLogs(prev => [newLog, ...prev]);
+        sessionStorage.setItem('smit_visit_logged', 'true');
+      }
+    }
+  }, [isInitialized, userIp, currentUser]);
+
   // Disable Right-Click and DevTools keyboard shortcuts globally + Log alerts
   useEffect(() => {
     let lastViolationTime = 0;

@@ -260,37 +260,69 @@ export const DatabaseProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   const [submissions, setSubmissions] = useState<Submission[]>([]);
   const [auditLogs, setAuditLogs] = useState<AuditLog[]>([]);
   const [isInitialized, setIsInitialized] = useState(false);
+  const [userIp, setUserIp] = useState<string>('Detecting...');
 
-  // Disable Right-Click and DevTools keyboard shortcuts globally
+  // Fetch client IP on load
   useEffect(() => {
+    fetch('https://api.ipify.org?format=json')
+      .then(res => res.json())
+      .then(data => setUserIp(data.ip))
+      .catch(() => setUserIp('Unknown IP'));
+  }, []);
+
+  // Disable Right-Click and DevTools keyboard shortcuts globally + Log alerts
+  useEffect(() => {
+    let lastViolationTime = 0;
+
+    const logViolation = (activity: string) => {
+      const now = Date.now();
+      if (now - lastViolationTime < 5000) return; // 5-second throttle
+      lastViolationTime = now;
+
+      const violator = currentUser ? `${currentUser.name} (${currentUser.id} - ${currentUser.role})` : 'Anonymous Guest';
+      const newLog: AuditLog = {
+        id: 'log_' + Date.now(),
+        user: 'Shield Alert',
+        action: `Security Alert: ${violator} tried to use ${activity} from IP: ${userIp}`,
+        timestamp: new Date().toISOString()
+      };
+      setAuditLogs(prev => [newLog, ...prev]);
+    };
+
     const handleContextMenu = (e: MouseEvent) => {
       e.preventDefault();
+      logViolation('Right-Click Context Menu');
     };
 
     const handleKeyDown = (e: KeyboardEvent) => {
       // F12
       if (e.key === 'F12' || e.keyCode === 123) {
         e.preventDefault();
+        logViolation('F12 Inspector Shortcut');
         return false;
       }
       // Ctrl+Shift+I / J / C (Windows/Linux)
       if (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'J' || e.key === 'C' || e.keyCode === 73 || e.keyCode === 74 || e.keyCode === 67)) {
         e.preventDefault();
+        logViolation('DevTools inspect console panel combination');
         return false;
       }
       // Cmd+Opt+I / J / C (macOS)
       if (e.metaKey && e.altKey && (e.key === 'i' || e.key === 'j' || e.key === 'c' || e.keyCode === 73 || e.keyCode === 74 || e.keyCode === 67)) {
         e.preventDefault();
+        logViolation('macOS DevTools keyboard shortcuts');
         return false;
       }
       // Ctrl+U (View Source) or Cmd+Opt+U
       if ((e.ctrlKey && (e.key === 'u' || e.key === 'U' || e.keyCode === 85)) || (e.metaKey && e.altKey && (e.key === 'u' || e.key === 'U' || e.keyCode === 85))) {
         e.preventDefault();
+        logViolation('View Source (Ctrl+U)');
         return false;
       }
       // Ctrl+S (Save) or Cmd+S
       if ((e.ctrlKey && (e.key === 's' || e.key === 'S' || e.keyCode === 83)) || (e.metaKey && (e.key === 's' || e.key === 'S' || e.keyCode === 83))) {
         e.preventDefault();
+        logViolation('Page Save attempt (Ctrl+S)');
         return false;
       }
     };
@@ -302,7 +334,7 @@ export const DatabaseProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       document.removeEventListener('contextmenu', handleContextMenu);
       document.removeEventListener('keydown', handleKeyDown);
     };
-  }, []);
+  }, [userIp, currentUser]);
 
   // Initialize DB from Server API
   useEffect(() => {

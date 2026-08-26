@@ -849,25 +849,27 @@ export const AdminDashboard: React.FC = () => {
             <span className="text-xs text-slate-500 font-mono">Real-time update stream</span>
           </div>
 
-          <div className="overflow-hidden rounded-xl border border-slate-800 bg-slate-900/20 max-h-[500px] overflow-y-auto">
-            <table className="w-full text-left border-collapse">
-              <thead>
-                <tr className="border-b border-slate-800 bg-slate-900/60 text-xs font-semibold uppercase tracking-wider text-slate-400">
-                  <th className="px-6 py-4">Timestamp</th>
-                  <th className="px-6 py-4">User</th>
-                  <th className="px-6 py-4">Action</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-800/60 text-xs font-mono text-slate-300">
-                {auditLogs.map((log) => (
-                  <tr key={log.id} className="hover:bg-slate-900/30">
-                    <td className="px-6 py-3 text-slate-500">{new Date(log.timestamp).toLocaleString()}</td>
-                    <td className="px-6 py-3 font-semibold text-indigo-400">{log.user}</td>
-                    <td className="px-6 py-3 text-slate-200">{log.action}</td>
+          <div className="w-full overflow-x-auto rounded-xl border border-slate-800 bg-slate-900/20">
+            <div className="max-h-[500px] overflow-y-auto min-w-[750px] sm:min-w-0">
+              <table className="w-full text-left border-collapse">
+                <thead>
+                  <tr className="border-b border-slate-800 bg-slate-900/60 text-xs font-semibold uppercase tracking-wider text-slate-400">
+                    <th className="px-6 py-4">Timestamp</th>
+                    <th className="px-6 py-4">User</th>
+                    <th className="px-6 py-4">Action</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody className="divide-y divide-slate-800/60 text-xs font-mono text-slate-300">
+                  {auditLogs.map((log) => (
+                    <tr key={log.id} className="hover:bg-slate-900/30">
+                      <td className="px-6 py-3 text-slate-500 whitespace-nowrap">{new Date(log.timestamp).toLocaleString()}</td>
+                      <td className="px-6 py-3 font-semibold text-indigo-400 whitespace-nowrap">{log.user}</td>
+                      <td className="px-6 py-3 text-slate-200">{log.action}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
       )}

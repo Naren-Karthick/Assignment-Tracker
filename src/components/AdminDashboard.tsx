@@ -849,27 +849,43 @@ export const AdminDashboard: React.FC = () => {
             <span className="text-xs text-slate-500 font-mono">Real-time update stream</span>
           </div>
 
-          <div className="w-full overflow-x-auto rounded-xl border border-slate-800 bg-slate-900/20">
-            <div className="max-h-[500px] overflow-y-auto min-w-[750px] sm:min-w-0">
-              <table className="w-full text-left border-collapse">
-                <thead>
-                  <tr className="border-b border-slate-800 bg-slate-900/60 text-xs font-semibold uppercase tracking-wider text-slate-400">
-                    <th className="px-6 py-4">Timestamp</th>
-                    <th className="px-6 py-4">User</th>
-                    <th className="px-6 py-4">Action</th>
+          {/* Desktop Table View */}
+          <div className="hidden md:block overflow-hidden rounded-xl border border-slate-800 bg-slate-900/20 max-h-[550px] overflow-y-auto">
+            <table className="w-full text-left border-collapse">
+              <thead>
+                <tr className="border-b border-slate-800 bg-slate-900/60 text-xs font-semibold uppercase tracking-wider text-slate-400">
+                  <th className="px-6 py-4">Timestamp</th>
+                  <th className="px-6 py-4">User</th>
+                  <th className="px-6 py-4">Action</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-800/60 text-xs font-mono text-slate-300">
+                {auditLogs.map((log) => (
+                  <tr key={log.id} className="hover:bg-slate-900/30">
+                    <td className="px-6 py-3 text-slate-500 whitespace-nowrap">{new Date(log.timestamp).toLocaleString()}</td>
+                    <td className="px-6 py-3 font-semibold text-indigo-400 whitespace-nowrap">{log.user}</td>
+                    <td className="px-6 py-3 text-slate-200 break-words whitespace-normal max-w-lg">{log.action}</td>
                   </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-800/60 text-xs font-mono text-slate-300">
-                  {auditLogs.map((log) => (
-                    <tr key={log.id} className="hover:bg-slate-900/30">
-                      <td className="px-6 py-3 text-slate-500 whitespace-nowrap">{new Date(log.timestamp).toLocaleString()}</td>
-                      <td className="px-6 py-3 font-semibold text-indigo-400 whitespace-nowrap">{log.user}</td>
-                      <td className="px-6 py-3 text-slate-200 break-words whitespace-normal min-w-[250px] max-w-sm sm:max-w-md">{log.action}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          {/* Mobile Card-List View (No Sideway Scroll) */}
+          <div className="block md:hidden max-h-[550px] overflow-y-auto space-y-3 pr-1">
+            {auditLogs.length === 0 ? (
+              <p className="text-center text-xs text-slate-500 italic py-6">No audit records found.</p>
+            ) : (
+              auditLogs.map((log) => (
+                <div key={log.id} className="rounded-xl border border-slate-800 bg-slate-900/40 p-4 space-y-2 text-xs">
+                  <div className="flex justify-between items-center text-[10px] font-mono border-b border-slate-850 pb-2">
+                    <span className="text-slate-500">{new Date(log.timestamp).toLocaleString()}</span>
+                    <span className="font-semibold text-indigo-400 font-sans uppercase tracking-wider">{log.user}</span>
+                  </div>
+                  <p className="text-slate-200 break-all leading-relaxed whitespace-normal pr-1">{log.action}</p>
+                </div>
+              ))
+            )}
           </div>
         </div>
       )}

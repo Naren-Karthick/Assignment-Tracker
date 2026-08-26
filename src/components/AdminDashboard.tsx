@@ -864,7 +864,7 @@ export const AdminDashboard: React.FC = () => {
                     <tr key={log.id} className="hover:bg-slate-900/30">
                       <td className="px-6 py-3 text-slate-500 whitespace-nowrap">{new Date(log.timestamp).toLocaleString()}</td>
                       <td className="px-6 py-3 font-semibold text-indigo-400 whitespace-nowrap">{log.user}</td>
-                      <td className="px-6 py-3 text-slate-200">{log.action}</td>
+                      <td className="px-6 py-3 text-slate-200 break-words whitespace-normal min-w-[250px] max-w-sm sm:max-w-md">{log.action}</td>
                     </tr>
                   ))}
                 </tbody>

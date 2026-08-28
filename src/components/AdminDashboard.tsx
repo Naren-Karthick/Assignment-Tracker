@@ -807,7 +807,7 @@ export const AdminDashboard: React.FC = () => {
           <div className="mt-8 pt-6 border-t border-slate-800">
             <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">User Passwords Directory</h4>
             <div className="overflow-hidden rounded-lg border border-slate-800 bg-slate-950/20 text-xs">
-              <div className="overflow-y-auto max-h-72">
+              <div className="overflow-x-auto overflow-y-auto max-h-72">
                 <table className="w-full text-left border-collapse">
                   <thead>
                     <tr className="border-b border-slate-850 bg-slate-950/80 text-[10px] font-semibold uppercase tracking-wider text-slate-400">
@@ -850,7 +850,7 @@ export const AdminDashboard: React.FC = () => {
           </div>
 
           {/* Desktop Table View */}
-          <div className="hidden md:block overflow-hidden rounded-xl border border-slate-800 bg-slate-900/20 max-h-[550px] overflow-y-auto">
+          <div className="hidden md:block overflow-hidden rounded-xl border border-slate-800 bg-slate-900/20 max-h-[550px] overflow-x-auto overflow-y-auto">
             <table className="w-full text-left border-collapse">
               <thead>
                 <tr className="border-b border-slate-800 bg-slate-900/60 text-xs font-semibold uppercase tracking-wider text-slate-400">

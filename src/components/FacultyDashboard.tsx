@@ -515,119 +515,121 @@ export const FacultyDashboard: React.FC<{ isEmbedded?: boolean }> = ({ isEmbedde
                     </div>
 
                     <div className="overflow-hidden rounded-xl border border-slate-800 bg-slate-900/20">
-                      <table className="w-full text-left border-collapse">
-                        <thead>
-                          <tr className="border-b border-slate-800 bg-slate-900/60 text-xs font-semibold uppercase tracking-wider text-slate-400">
-                            <th className="px-6 py-4">Student</th>
-                            <th className="px-6 py-4">Submission Status</th>
-                            <th className="px-6 py-4">Marks & Feedback</th>
-                            <th className="px-6 py-4 text-right">Actions</th>
-                          </tr>
-                        </thead>
-                        <tbody className="divide-y divide-slate-850 text-xs text-slate-300">
-                          {targetStudents.map(student => {
-                            const sub = submissions.find(
-                              s => s.assignmentId === selectedAssignmentForEval && s.studentRegisterNo === student.id
-                            );
-                            const isEditing = editingSubmissionStudentId === student.id;
+                      <div className="overflow-x-auto">
+                        <table className="w-full text-left border-collapse">
+                          <thead>
+                            <tr className="border-b border-slate-800 bg-slate-900/60 text-xs font-semibold uppercase tracking-wider text-slate-400">
+                              <th className="px-6 py-4">Student</th>
+                              <th className="px-6 py-4">Submission Status</th>
+                              <th className="px-6 py-4">Marks & Feedback</th>
+                              <th className="px-6 py-4 text-right">Actions</th>
+                            </tr>
+                          </thead>
+                          <tbody className="divide-y divide-slate-850 text-xs text-slate-300">
+                            {targetStudents.map(student => {
+                              const sub = submissions.find(
+                                s => s.assignmentId === selectedAssignmentForEval && s.studentRegisterNo === student.id
+                              );
+                              const isEditing = editingSubmissionStudentId === student.id;
 
-                            return (
-                              <tr key={student.id} className="hover:bg-slate-900/20">
-                                <td className="px-6 py-4">
-                                  <p className="font-semibold text-slate-200 text-sm">{student.name}</p>
-                                  <p className="font-mono text-[10px] text-slate-500 mt-0.5">{student.id}</p>
-                                </td>
-                                <td className="px-6 py-4">
-                                  {isEditing ? (
-                                    <select
-                                      value={evalStatus}
-                                      onChange={(e: any) => setEvalStatus(e.target.value)}
-                                      className="rounded border border-slate-700 bg-slate-950 p-1.5 focus:outline-none"
-                                    >
-                                      <option value="Completed">Completed</option>
-                                      <option value="Pending">Pending</option>
-                                      <option value="Late">Late</option>
-                                      <option value="Missing">Missing</option>
-                                    </select>
-                                  ) : (
-                                    <span className={`inline-flex items-center rounded-md px-2 py-1 text-xs font-semibold border ${
-                                      sub?.status === 'Completed' ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' :
-                                      sub?.status === 'Late' ? 'bg-amber-500/10 text-amber-400 border-amber-500/20' :
-                                      sub?.status === 'Missing' ? 'bg-red-500/10 text-red-400 border-red-500/20' :
-                                      'bg-slate-500/10 text-slate-400 border-slate-500/20'
-                                    }`}>
-                                      {sub?.status || 'Pending'}
-                                    </span>
-                                  )}
-                                </td>
-                                <td className="px-6 py-4 max-w-[220px] truncate">
-                                  {isEditing ? (
-                                    <div className="space-y-1.5">
-                                      <input
-                                        type="number"
-                                        placeholder={`Marks (0-${currentAssign?.totalMark || 100})`}
-                                        value={evalScore}
-                                        onChange={(e) => setEvalScore(e.target.value)}
-                                        className="rounded border border-slate-700 bg-slate-950 p-1.5 w-24 focus:outline-none"
-                                        max={currentAssign?.totalMark || 100}
-                                        min={0}
-                                      />
-                                      <input
-                                        type="text"
-                                        placeholder="Feedback comments..."
-                                        value={evalFeedback}
-                                        onChange={(e) => setEvalFeedback(e.target.value)}
-                                        className="rounded border border-slate-700 bg-slate-950 p-1.5 w-full focus:outline-none"
-                                      />
-                                    </div>
-                                  ) : (
-                                    <div>
-                                      {sub?.score !== undefined ? (
-                                        <p className="font-semibold text-white">Score: {sub.score} / {currentAssign?.totalMark || 100}</p>
-                                      ) : (
-                                        <p className="text-slate-500">Ungraded</p>
-                                      )}
-                                      {sub?.feedback && (
-                                        <p className="text-slate-400 italic text-[10px] truncate mt-0.5" title={sub.feedback}>
-                                          "{sub.feedback}"
-                                        </p>
-                                      )}
-                                    </div>
-                                  )}
-                                </td>
-                                <td className="px-6 py-4 text-right">
-                                  {isEditing ? (
-                                    <div className="flex justify-end gap-1.5">
-                                      <button
-                                        onClick={(e) => handleSaveEvaluation(e, student.id)}
-                                        className="p-1.5 text-emerald-400 bg-emerald-500/10 rounded hover:bg-emerald-500/20"
-                                        title="Save grades"
+                              return (
+                                <tr key={student.id} className="hover:bg-slate-900/20">
+                                  <td className="px-6 py-4">
+                                    <p className="font-semibold text-slate-200 text-sm">{student.name}</p>
+                                    <p className="font-mono text-[10px] text-slate-500 mt-0.5">{student.id}</p>
+                                  </td>
+                                  <td className="px-6 py-4">
+                                    {isEditing ? (
+                                      <select
+                                        value={evalStatus}
+                                        onChange={(e: any) => setEvalStatus(e.target.value)}
+                                        className="rounded border border-slate-700 bg-slate-950 p-1.5 focus:outline-none"
                                       >
-                                        <Save className="h-4 w-4" />
-                                      </button>
+                                        <option value="Completed">Completed</option>
+                                        <option value="Pending">Pending</option>
+                                        <option value="Late">Late</option>
+                                        <option value="Missing">Missing</option>
+                                      </select>
+                                    ) : (
+                                      <span className={`inline-flex items-center rounded-md px-2 py-1 text-xs font-semibold border ${
+                                        sub?.status === 'Completed' ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' :
+                                        sub?.status === 'Late' ? 'bg-amber-500/10 text-amber-400 border-amber-500/20' :
+                                        sub?.status === 'Missing' ? 'bg-red-500/10 text-red-400 border-red-500/20' :
+                                        'bg-slate-500/10 text-slate-400 border-slate-500/20'
+                                      }`}>
+                                        {sub?.status || 'Pending'}
+                                      </span>
+                                    )}
+                                  </td>
+                                  <td className="px-6 py-4 max-w-[220px] truncate">
+                                    {isEditing ? (
+                                      <div className="space-y-1.5">
+                                        <input
+                                          type="number"
+                                          placeholder={`Marks (0-${currentAssign?.totalMark || 100})`}
+                                          value={evalScore}
+                                          onChange={(e) => setEvalScore(e.target.value)}
+                                          className="rounded border border-slate-700 bg-slate-950 p-1.5 w-24 focus:outline-none"
+                                          max={currentAssign?.totalMark || 100}
+                                          min={0}
+                                        />
+                                        <input
+                                          type="text"
+                                          placeholder="Feedback comments..."
+                                          value={evalFeedback}
+                                          onChange={(e) => setEvalFeedback(e.target.value)}
+                                          className="rounded border border-slate-700 bg-slate-950 p-1.5 w-full focus:outline-none"
+                                        />
+                                      </div>
+                                    ) : (
+                                      <div>
+                                        {sub?.score !== undefined ? (
+                                          <p className="font-semibold text-white">Score: {sub.score} / {currentAssign?.totalMark || 100}</p>
+                                        ) : (
+                                          <p className="text-slate-500">Ungraded</p>
+                                        )}
+                                        {sub?.feedback && (
+                                          <p className="text-slate-400 italic text-[10px] truncate mt-0.5" title={sub.feedback}>
+                                            "{sub.feedback}"
+                                          </p>
+                                        )}
+                                      </div>
+                                    )}
+                                  </td>
+                                  <td className="px-6 py-4 text-right">
+                                    {isEditing ? (
+                                      <div className="flex justify-end gap-1.5">
+                                        <button
+                                          onClick={(e) => handleSaveEvaluation(e, student.id)}
+                                          className="p-1.5 text-emerald-400 bg-emerald-500/10 rounded hover:bg-emerald-500/20"
+                                          title="Save grades"
+                                        >
+                                          <Save className="h-4 w-4" />
+                                        </button>
+                                        <button
+                                          type="button"
+                                          onClick={() => setEditingSubmissionStudentId(null)}
+                                          className="p-1.5 text-slate-500 bg-slate-800 rounded hover:bg-slate-750"
+                                          title="Cancel"
+                                        >
+                                          <X className="h-4 w-4" />
+                                        </button>
+                                      </div>
+                                    ) : (
                                       <button
-                                        type="button"
-                                        onClick={() => setEditingSubmissionStudentId(null)}
-                                        className="p-1.5 text-slate-500 bg-slate-800 rounded hover:bg-slate-750"
-                                        title="Cancel"
+                                        onClick={() => startEvaluation(student.id, sub?.status, sub?.score, sub?.feedback)}
+                                        className="inline-flex items-center gap-1 rounded bg-indigo-600/10 hover:bg-indigo-600/20 px-2 py-1.5 text-xs text-indigo-400 font-semibold border border-indigo-500/25 transition-colors"
                                       >
-                                        <X className="h-4 w-4" />
+                                        <span>Grade</span>
                                       </button>
-                                    </div>
-                                  ) : (
-                                    <button
-                                      onClick={() => startEvaluation(student.id, sub?.status, sub?.score, sub?.feedback)}
-                                      className="inline-flex items-center gap-1 rounded bg-indigo-600/10 hover:bg-indigo-600/20 px-2 py-1.5 text-xs text-indigo-400 font-semibold border border-indigo-500/25 transition-colors"
-                                    >
-                                      <span>Grade</span>
-                                    </button>
-                                  )}
-                                </td>
-                              </tr>
-                            );
-                          })}
-                        </tbody>
-                      </table>
+                                    )}
+                                  </td>
+                                </tr>
+                              );
+                            })}
+                          </tbody>
+                        </table>
+                      </div>
                     </div>
                   </div>
                 );
